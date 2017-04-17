@@ -1,6 +1,6 @@
 import react.*;
 import js.Browser.document;
-import react.ReactMacro.jsx;
+import smalluniverse.SUMacro.jsx;
 
 class Client {
 	static function main() {
