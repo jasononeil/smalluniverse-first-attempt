@@ -1,0 +1,26 @@
+{
+  "name": "react-test",
+  "version": "0.1.0",
+  "author": "Jason O'Neil <jason.oneil@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "webpack": "node node_modules/webpack/bin/webpack.js",
+    "watch": "node node_modules/webpack/bin/webpack.js --watch"
+  },
+  "dependencies": {
+    "babel-polyfill": "^6.22.0",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.22.1",
+    "babel-loader": "^6.2.10",
+    "babel-preset-es2015": "^6.22.0",
+    "babel-preset-react": "^6.22.0",
+    "css-loader": "^0.26.1",
+    "less": "^2.7.2",
+    "less-loader": "^2.2.3",
+    "style-loader": "^0.13.1",
+    "webpack": "^2.2.1"
+  }
+}

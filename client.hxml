@@ -1,0 +1,4 @@
+-lib react
+-cp src
+-main Client
+-js www/react-test.haxe.js

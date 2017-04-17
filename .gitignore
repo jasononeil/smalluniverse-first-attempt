@@ -1,0 +1,10 @@
+# 3rd party libraries
+node_modules
+.haxelib
+
+# Compiled files
+www/lib
+www/res
+www/index.php
+www/react-test.haxe.js
+www/react-test.bundle.js
