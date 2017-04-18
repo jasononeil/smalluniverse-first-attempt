@@ -97,7 +97,7 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 		}
 		switch this {
 			case Text(str):
-				// TODO: we should probably be escaping things here.
+				str = StringTools.htmlEscape(str);
 				if (onlyChild) {
 					return str;
 				}
@@ -122,7 +122,7 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 								continue;
 							}
 							var value = Reflect.field(props, field);
-							// TODO: we should probably be escaping things here.
+							value = StringTools.htmlEscape(value);
 							attrsHtml += ' $field="$value"';
 						}
 					}
