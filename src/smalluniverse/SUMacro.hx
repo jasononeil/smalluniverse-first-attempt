@@ -102,7 +102,11 @@ class SUMacro {
 
                 var props = ReactMacro.makeProps(spread, attrs, pos);
 
-                return macro smalluniverse.SUServerSideComponent.SUServerSideElement.createElement($type, $props, $a{children});
+                if (isHtml) {
+                    return macro smalluniverse.SUServerSideComponent.SUServerSideNode.createNodeForHtml($type, $props, $a{children});
+                } else {
+                    return macro smalluniverse.SUServerSideComponent.SUServerSideNode.createNodeForComponent($type, $props, $a{children});
+                }
 		}
 	}
     #end

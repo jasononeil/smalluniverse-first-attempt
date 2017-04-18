@@ -1,5 +1,11 @@
 package smalluniverse;
 
+/**
+    A pure component is just a function, it takes properties and renders an element, usually using JSX.
+
+    Pure components have no internal state, and should return the same result every time they are called.
+**/
+typedef SUPureComponent<TProps> = TProps->SUElement;
 
 /**
     Components in Small Universe should extend this class.
@@ -16,9 +22,9 @@ typedef SUComponent<TProps, TState, TRefs> =
     A virtual-DOM element that is the result of having rendered a component.
 
     On client-side JS, this points to `ReactElement`.
-    On server-side platforms, this points to `SUServerSideElement`.
+    On server-side platforms, this points to `SUServerSideNode`.
 **/
 typedef SUElement =
     #if (client) react.ReactComponent.ReactElement
-    #else SUServerSideComponent.SUServerSideElement
+    #else SUServerSideComponent.SUServerSideNode
     #end;

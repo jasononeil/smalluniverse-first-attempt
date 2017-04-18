@@ -1,5 +1,3 @@
-import haxe.crypto.Adler32;
-import haxe.io.Bytes;
 import monsoon.Monsoon;
 import monsoon.Request;
 import monsoon.Response;
@@ -19,7 +17,7 @@ class Server {
 	static function main() {
 		var app = new Monsoon();
 		app.route('/', function (req:Request, res:Response) {
-			var componentHtml = jsx('<HelloPage name="Anna" />').renderToString();
+			var componentHtml = jsx('<HelloPage name="Jason" />').renderToString();
 			var html = template.split('{component}').join(componentHtml);
 			res.send(html);
 		});
