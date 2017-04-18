@@ -10,6 +10,7 @@ import tink.CoreApi;
 
     It is designed to be mostly compatible with React components, for a subclass to extend either this or React.Component directly, and the code to work seamlessly on either.
 **/
+@:autoBuild(smalluniverse.SUComponentBuilder.buildUniversalComponent())
 class SUServerSideComponent<TProps, TState, TRefs> {
 	var props(default, null):TProps;
 	var state(default, null):TState;

@@ -23,9 +23,8 @@ class Header extends UniversalComponent<{text:String}, {}, {}> {
 		return jsx('<h1 onClick=${alert}>${this.props.text}</h1>');
 	}
 
+	@:client
 	function alert() {
-		#if client
 		js.Browser.alert("click");
-		#end
 	}
 }
