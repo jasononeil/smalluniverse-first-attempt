@@ -1,8 +1,8 @@
-import smalluniverse.SUComponent;
+import smalluniverse.UniversalComponent;
 import smalluniverse.SUMacro.jsx;
 
-class HelloPage extends SUComponent<{name:String}, {}, {}> {
-	override function render():SUElement {
+class HelloPage extends UniversalComponent<{name:String}, {}, {}> {
+	override function render():UniversalElement {
 			function MyParagraph(props:{text:String}) {
 				return jsx('<p>${props.text}</p>');
 			}
@@ -18,8 +18,8 @@ class HelloPage extends SUComponent<{name:String}, {}, {}> {
 	}
 }
 
-class Header extends SUComponent<{text:String}, {}, {}> {
-	override function render():SUElement {
+class Header extends UniversalComponent<{text:String}, {}, {}> {
+	override function render():UniversalElement {
 		return jsx('<h1 onClick=${alert}>${this.props.text}</h1>');
 	}
 

@@ -1,6 +1,6 @@
 package smalluniverse;
 
-import smalluniverse.SUComponent.SUPureComponent;
+import smalluniverse.UniversalComponent;
 import haxe.crypto.Adler32;
 import haxe.io.Bytes;
 import tink.CoreApi;
@@ -200,7 +200,7 @@ enum SUServerSideNodeType<TProps> {
 
 	For internal use.
 **/
-abstract SUServerSideRenderFn<TProps>(SUPureComponent<TProps>) from SUPureComponent<TProps> {
+abstract SUServerSideRenderFn<TProps>(UniversalPureComponent<TProps>) from UniversalPureComponent<TProps> {
 	public function new (fn) {
 		this = fn;
 	}
