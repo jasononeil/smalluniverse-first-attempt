@@ -4,6 +4,6 @@ import smalluniverse.SUMacro.jsx;
 
 class Client {
 	static function main() {
-		ReactDOM.render(jsx('<HelloPage name="Jason" />'), document.getElementById('container'));
+		ReactDOM.render(jsx('<HelloPage name="Jason" />'), document.getElementById('smalluniverse_root'));
 	}
 }

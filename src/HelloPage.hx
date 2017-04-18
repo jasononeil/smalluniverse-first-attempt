@@ -1,12 +1,13 @@
+import smalluniverse.UniversalPage;
 import smalluniverse.UniversalComponent;
 import smalluniverse.SUMacro.jsx;
 
-class HelloPage extends UniversalComponent<{name:String}, {}, {}> {
+class HelloPage extends UniversalPage<{name:String}, {}, {}> {
 	override function render():UniversalElement {
 			function MyParagraph(props:{text:String}) {
 				return jsx('<p>${props.text}</p>');
 			}
-        	return jsx('<div>
+			return jsx('<div>
 				<Header text=${"Hello " + this.props.name}></Header>
 				<h2><em>or should I say <strong>${this.props.name.toUpperCase()}</strong></em></h2>
 				<MyParagraph text="Nice to meet you!"></MyParagraph>
