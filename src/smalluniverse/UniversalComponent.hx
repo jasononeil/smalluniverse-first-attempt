@@ -1,11 +1,12 @@
 package smalluniverse;
 
 /**
-    A pure component is just a function, it takes properties and renders an element, usually using JSX.
+    A functional component is just a function, it takes properties and renders an element, usually using JSX.
 
-    Pure components have no internal state, and should return the same result every time they are called.
+    For the difference between functional components and state components, see:
+    https://facebook.github.io/react/docs/components-and-props.html#functional-and-class-components
 **/
-typedef UniversalPureComponent<TProps> = TProps->UniversalElement;
+typedef UniversalFunctionalComponent<TProps> = TProps->UniversalElement;
 
 /**
     Components in Small Universe should extend this class.

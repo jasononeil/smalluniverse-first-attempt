@@ -201,7 +201,7 @@ enum SUServerSideNodeType<TProps> {
 
 	For internal use.
 **/
-abstract SUServerSideRenderFn<TProps>(UniversalPureComponent<TProps>) from UniversalPureComponent<TProps> {
+abstract SUServerSideRenderFn<TProps>(UniversalFunctionalComponent<TProps>) from UniversalFunctionalComponent<TProps> {
 	public function new (fn) {
 		this = fn;
 	}
