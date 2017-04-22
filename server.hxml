@@ -3,6 +3,8 @@
 -D server
 -lib monsoon
 -lib react
+-lib tink_core
+-lib tink_macro
 -cp src
 -main Server
 -php www/

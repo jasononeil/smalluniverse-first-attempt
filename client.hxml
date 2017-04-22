@@ -1,5 +1,7 @@
 -D client
 -lib react
+-lib tink_core
+-lib tink_macro
 -cp src
 -main Client
 -js www/react-test.haxe.js
