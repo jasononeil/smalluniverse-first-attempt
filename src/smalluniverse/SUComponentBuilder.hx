@@ -19,7 +19,7 @@ class SUComponentBuilder {
 					case Success(_): emptyField(member);
 					default:
 				}
-			#elseif Client
+			#elseif client
 				// Empty fields with `@:server` metadata.
 				switch member.extractMeta(':client') {
 					case Success(_): emptyField(member);
