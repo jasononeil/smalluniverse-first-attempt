@@ -6,9 +6,9 @@ import haxe.io.Bytes;
 import tink.CoreApi;
 
 /**
-    A base class for SmallUniverse components - a subset of React components that can be rendered on any Haxe server-side platform.
+	A base class for SmallUniverse components - a subset of React components that can be rendered on any Haxe server-side platform.
 
-    It is designed to be mostly compatible with React components, for a subclass to extend either this or React.Component directly, and the code to work seamlessly on either.
+	It is designed to be mostly compatible with React components, for a subclass to extend either this or React.Component directly, and the code to work seamlessly on either.
 **/
 @:autoBuild(smalluniverse.SUComponentBuilder.buildUniversalComponent())
 class SUServerSideComponent<TProps, TState, TRefs> {
@@ -16,8 +16,8 @@ class SUServerSideComponent<TProps, TState, TRefs> {
 	var state(default, null):TState;
 
 	public function new(?props:TProps) {
-        this.props = props;
-    }
+		this.props = props;
+	}
 
 	/**
 		https://facebook.github.io/react/docs/react-component.html#render
@@ -27,36 +27,36 @@ class SUServerSideComponent<TProps, TState, TRefs> {
 	}
 
 	/**
-        React lifecycle hook.
-        This is the only lifecycle hook that will be executed in server-side rendering.
+		React lifecycle hook.
+		This is the only lifecycle hook that will be executed in server-side rendering.
 		See https://facebook.github.io/react/docs/react-component.html#componentwillmount
 	**/
 	public function componentWillMount():Void {}
 
 	/**
-        React lifecycle hook.
-        Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
 		See https://facebook.github.io/react/docs/react-component.html#componentdidmount
 	**/
 	public function componentDidMount():Void {}
 
 	/**
-        React lifecycle hook.
-        Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
 		See https://facebook.github.io/react/docs/react-component.html#componentwillunmount
 	**/
 	public function componentWillUnmount():Void {}
 
 	/**
-        React lifecycle hook.
-        Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
 		See https://facebook.github.io/react/docs/react-component.html#componentwillreceiveprops
 	**/
 	public function componentWillReceiveProps(nextProps:TProps):Void {}
 
 	/**
-        React lifecycle hook.
-        Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
 		See https://facebook.github.io/react/docs/react-component.html#shouldcomponentupdate
 	**/
 	dynamic public function shouldComponentUpdate(nextProps:TProps, nextState:TState):Bool {
@@ -64,15 +64,15 @@ class SUServerSideComponent<TProps, TState, TRefs> {
 	}
 
 	/**
-        React lifecycle hook.
-        Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
 		See https://facebook.github.io/react/docs/react-component.html#componentwillupdate
 	**/
 	public function componentWillUpdate(nextProps:TProps, nextState:TState):Void {}
 
 	/**
-        React lifecycle hook.
-        Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
 		See https://facebook.github.io/react/docs/react-component.html#componentdidupdate
 	**/
 	public function componentDidUpdate(prevProps:TProps, prevState:TState):Void {}

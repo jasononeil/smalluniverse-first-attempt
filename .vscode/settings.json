@@ -2,5 +2,6 @@
     "haxe.displayConfigurations": [
         ["client.hxml"],
         ["server.hxml"]
-    ]
+    ],
+    "editor.insertSpaces": false
 }
