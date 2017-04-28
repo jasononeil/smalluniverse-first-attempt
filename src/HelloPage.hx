@@ -1,8 +1,13 @@
 import smalluniverse.UniversalPage;
 import smalluniverse.UniversalComponent;
 import smalluniverse.SUMacro.jsx;
+using tink.CoreApi;
 
 class HelloPage extends UniversalPage<{name:String}, {}, {}> {
+	override function get():Promise<{name:String}> {
+		return {name: "Jason"};
+	}
+
 	override function render():UniversalElement {
 			function MyParagraph(props:{text:String}) {
 				return jsx('<p>${props.text}</p>');
