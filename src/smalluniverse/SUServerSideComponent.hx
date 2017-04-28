@@ -140,10 +140,10 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 				if (isRootNode) {
 					openingTag += ' data-reactroot=""';
 				}
-				openingTag += ' data-reactid="${idOfCurrentNode}"';
 				var html =
 					openingTag
 					 + attrsHtml
+					 + ' data-reactid="${idOfCurrentNode}"'
 					 + ((childrenHtml != "") ? ">" : "/>")
 					 + childrenHtml
 					 + ((childrenHtml != "") ? '</${tag}>' : '');
