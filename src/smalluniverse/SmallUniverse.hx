@@ -16,25 +16,31 @@ class SmallUniverse {
 		</head>
 		<body>
 			<div id="small-universe-app">{BODY}</div>
-			<script id="small-universe-props" type="text/json">{PROPS}</script>
+			<script id="small-universe-props" type="text/json" data-page="{PAGE}">{PROPS}</script>
 		</body>
 	</html>';
 
-	var app:Monsoon;
-	var injector:Injector<"smalluniverse">;
+	public var app:Monsoon;
+	public var injector:Injector<"smalluniverse">;
 
 	public function new(monsoonApp:Monsoon, injector:Injector<"smalluniverse">) {
 		this.app = monsoonApp;
 		this.injector = injector;
 	}
 
-	public function addPage(route:String, page:Class<UniversalPage<Dynamic,Dynamic,Dynamic>>) {
+	// TODO: Figure out a more elegant way of passing in the class and having the injector provide it.
+	// Either use macros, or have Injector.getter(Class) -> returns a lazy function.
+	public function addPage(route:String, pageFn:Void->UniversalPage<Dynamic,Dynamic,Dynamic>) {
 		app.get(route, function (req:Request, res:Response) {
-			var page = injector.get(HelloPage);
+			var page = pageFn();
 			page.renderToString().next(function (appHtml) {
+				var pageName = Type.getClassName(Type.getClass(page));
 				// TODO: switch to tink_JSON
 				var propsJson = haxe.Json.stringify(page.props);
-				var html = template.replace('{BODY}', appHtml).replace('{PROPS}', propsJson);
+				var html = template
+					.replace('{BODY}', appHtml)
+					.replace('{PAGE}', pageName)
+					.replace('{PROPS}', propsJson);
 				res.send(html);
 				return appHtml;
 			});

@@ -6,12 +6,24 @@ import smalluniverse.SUMacro.jsx;
 class Client {
 	static function main() {
 		onReady(function () {
-			var propsJson = document.getElementById('small-universe-props').innerText;
+			var propsElem = document.getElementById('small-universe-props');
+			var propsJson = propsElem.innerText;
 			var props = haxe.Json.parse(propsJson);
-			ReactDOM.render(
-				jsx('<HelloPage {...props}/>'),
-				document.getElementById('small-universe-app')
-			);
+			var container = document.getElementById('small-universe-app');
+			switch propsElem.getAttribute('data-page') {
+				case 'HelloPage':
+					ReactDOM.render(
+						jsx('<HelloPage {...props}/>'),
+						container
+					);
+				case 'AboutPage':
+					ReactDOM.render(
+						jsx('<AboutPage {...props}/>'),
+						container
+					);
+				case other:
+					trace('The page $other was rendered on the server, but we could not find a matching page on the client');
+			};
 		});
 	}
 

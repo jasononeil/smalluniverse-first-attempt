@@ -6,10 +6,12 @@ class Server {
 	static function main() {
 		var app = new Monsoon();
 		var injector = Injector.create('smalluniverse', [
-			HelloPage
+			HelloPage,
+			AboutPage
 		]);
 		var smallUniverse = new SmallUniverse(app, injector);
-		smallUniverse.addPage('/', HelloPage);
+		smallUniverse.addPage('/', function () return injector.get(HelloPage));
+		smallUniverse.addPage('/about', function () return injector.get(AboutPage));
 		app.listen(3000);
 	}
 }
