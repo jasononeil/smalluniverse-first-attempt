@@ -13,8 +13,8 @@ import tink.CoreApi;
 **/
 @:autoBuild(smalluniverse.SUComponentBuilder.buildUniversalComponent())
 class SUServerSideComponent<TProps, TState, TRefs> {
-	var props(default, null):TProps;
-	var state(default, null):TState;
+	public var props(default, null):TProps;
+	public var state(default, null):TState;
 
 	public function new(?props:TProps) {
 		this.props = props;
