@@ -7,7 +7,7 @@ using tink.CoreApi;
 @:autoBuild(smalluniverse.SUPageBuilder.buildUniversalPage())
 class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TState, TRefs> {
 	public function new() {
-		// A page should not receive props through a constructor, but through it's set method.
+		// A page should not receive props through a constructor, but through it's get() method.
 		super();
 	}
 	/**
