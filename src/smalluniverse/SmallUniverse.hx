@@ -12,10 +12,10 @@ class SmallUniverse {
 
 	static var template:String = '<html>
 		<head>
+			<script src="react-test.bundle.js" async></script>
 		</head>
 		<body>
-			<div id="smalluniverse_root">{BODY}</div>
-			<script src="react-test.bundle.js"></script>
+			<div id="small-universe-app">{BODY}</div>
 		</body>
 	</html>';
 
