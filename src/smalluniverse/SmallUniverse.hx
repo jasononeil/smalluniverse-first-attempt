@@ -1,5 +1,6 @@
 package smalluniverse;
 
+import dodrugs.Injector;
 import smalluniverse.SUServerSideComponent;
 import smalluniverse.SUMacro.jsx;
 import monsoon.Request;
@@ -17,17 +18,20 @@ class SmallUniverse {
 		</body>
 	</html>';
 	var app:Monsoon;
+	var injector:Injector<"smalluniverse">;
 
-	public function new(monsoonApp:Monsoon) {
+	public function new(monsoonApp:Monsoon, injector:Injector<"smalluniverse">) {
 		this.app = monsoonApp;
+		this.injector = injector;
 	}
 
 	public function addPage(route:String, page:Class<UniversalPage<Dynamic,Dynamic,Dynamic>>) {
 		app.get(route, function (req:Request, res:Response) {
-			var componentCls:Class<SUServerSideComponent<Dynamic,Dynamic,Dynamic>> = cast page;
-			var component = SUServerSideNode.createNodeForComponent(componentCls, {name: "Jason"}, null);
-			var html = template.replace('{BODY}', component.renderToString());
-			res.send(html);
+			var page = injector.get(HelloPage);
+			page.renderToString().handle(function (render) {
+				var html = template.replace('{BODY}', render.sure());
+				res.send(html);
+			});
 		});
 	}
 }

@@ -5,6 +5,7 @@
 -lib react
 -lib tink_core
 -lib tink_macro
+-lib dodrugs
 -cp src
 -main Server
 -php www/
