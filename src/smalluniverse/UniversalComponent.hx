@@ -10,11 +10,19 @@ typedef UniversalFunctionalComponent<TProps> = TProps->UniversalElement;
 
 /**
 	Components in Small Universe should extend this class.
+**/
+@:autoBuild(smalluniverse.SUComponentBuilder.buildUniversalComponent())
+class UniversalComponent<TProps, TState, TRefs> extends UniversalComponentBaseType<TProps, TState, TRefs> {
+
+}
+
+/**
+	A typedef that points to different things on different platforms, allowing "UniversalComponent" to behave consistently across platforms.
 
 	On client-side JS, this points to `ReactComponent`.
 	On server-side platforms, this points to `SUServerSideComponent`.
 **/
-typedef UniversalComponent<TProps, TState, TRefs> =
+typedef UniversalComponentBaseType<TProps, TState, TRefs> =
 	#if (client) react.ReactComponent.ReactComponentOf<TProps, TState, TRefs>
 	#else SUServerSideComponent<TProps, TState, TRefs>
 	#end;

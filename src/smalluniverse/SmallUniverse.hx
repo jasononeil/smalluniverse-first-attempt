@@ -6,6 +6,7 @@ import smalluniverse.SUMacro.jsx;
 import monsoon.Request;
 import monsoon.Response;
 using StringTools;
+using tink.CoreApi;
 
 class SmallUniverse {
 
@@ -17,6 +18,7 @@ class SmallUniverse {
 			<script src="react-test.bundle.js"></script>
 		</body>
 	</html>';
+
 	var app:Monsoon;
 	var injector:Injector<"smalluniverse">;
 

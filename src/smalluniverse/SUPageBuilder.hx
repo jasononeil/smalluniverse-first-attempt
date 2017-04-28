@@ -5,7 +5,7 @@ import haxe.macro.Expr;
 using tink.MacroApi;
 
 class SUPageBuilder {
-	public static function buildUniversalComponent():Array<Field> {
+	public static function buildUniversalPage():Array<Field> {
 		return ClassBuilder.run([
 			processGetMethod,
 			processServerActionMethods

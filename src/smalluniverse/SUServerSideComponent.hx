@@ -1,5 +1,6 @@
 package smalluniverse;
 
+#if server
 import smalluniverse.UniversalComponent;
 import haxe.crypto.Adler32;
 import haxe.io.Bytes;
@@ -218,3 +219,4 @@ abstract SUServerSideRenderFn<TProps>(UniversalFunctionalComponent<TProps>) from
 		}
 	}
 }
+#end
