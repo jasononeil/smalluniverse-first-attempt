@@ -33,17 +33,27 @@ class SmallUniverse {
 	public function addPage(route:String, pageFn:Void->UniversalPage<Dynamic,Dynamic,Dynamic>) {
 		app.get(route, function (req:Request, res:Response) {
 			var page = pageFn();
-			page.renderToString().next(function (appHtml) {
-				var pageName = Type.getClassName(Type.getClass(page));
-				// TODO: switch to tink_JSON
-				var propsJson = haxe.Json.stringify(page.props);
-				var html = template
-					.replace('{BODY}', appHtml)
-					.replace('{PAGE}', pageName)
-					.replace('{PROPS}', propsJson);
-				res.send(html);
-				return appHtml;
-			});
+			switch req.header.byName('x-small-universe-api') {
+				case Success(_):
+					// This is an API request and should return a JSON response.
+					page.get().handle(function (outcome) {
+						var props = outcome.sure();
+						res.json(outcome.sure());
+					});
+				case Failure(_):
+					// This is a normal request and should return a HTML response.
+					page.renderToString().handle(function (outcome) {
+						var appHtml = outcome.sure();
+						var pageName = Type.getClassName(Type.getClass(page));
+						// TODO: switch to tink_JSON
+						var propsJson = haxe.Json.stringify(page.props);
+						var html = template
+							.replace('{BODY}', appHtml)
+							.replace('{PAGE}', pageName)
+							.replace('{PROPS}', propsJson);
+						res.send(html);
+					});
+			}
 		});
 	}
 }
