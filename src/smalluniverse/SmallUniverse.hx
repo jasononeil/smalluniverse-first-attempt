@@ -16,6 +16,7 @@ class SmallUniverse {
 		</head>
 		<body>
 			<div id="small-universe-app">{BODY}</div>
+			<script id="small-universe-props" type="text/json">{PROPS}</script>
 		</body>
 	</html>';
 
@@ -30,9 +31,12 @@ class SmallUniverse {
 	public function addPage(route:String, page:Class<UniversalPage<Dynamic,Dynamic,Dynamic>>) {
 		app.get(route, function (req:Request, res:Response) {
 			var page = injector.get(HelloPage);
-			page.renderToString().handle(function (render) {
-				var html = template.replace('{BODY}', render.sure());
+			page.renderToString().next(function (appHtml) {
+				// TODO: switch to tink_JSON
+				var propsJson = haxe.Json.stringify(page.props);
+				var html = template.replace('{BODY}', appHtml).replace('{PROPS}', propsJson);
 				res.send(html);
+				return appHtml;
 			});
 		});
 	}

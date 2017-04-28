@@ -6,7 +6,12 @@ import smalluniverse.SUMacro.jsx;
 class Client {
 	static function main() {
 		onReady(function () {
-			ReactDOM.render(jsx('<HelloPage name="Jason" />'), document.getElementById('small-universe-app'));
+			var propsJson = document.getElementById('small-universe-props').innerText;
+			var props = haxe.Json.parse(propsJson);
+			ReactDOM.render(
+				jsx('<HelloPage {...props}/>'),
+				document.getElementById('small-universe-app')
+			);
 		});
 	}
 
