@@ -1,6 +1,9 @@
 package smalluniverse;
 
-import smalluniverse.SUServerSideComponent;
+#if client
+	import js.Browser.window;
+	import js.html.*;
+#end
 import smalluniverse.UniversalComponent;
 using tink.CoreApi;
 
@@ -22,10 +25,10 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 		return Future.sync(Success(null));
 	}
 
+	#if server
 	/**
 		TODO
 	**/
-	#if server
 	public function renderToString():Promise<String> {
 		return this.get().map(function (outcome:Outcome<TProps,Error>) {
 			return switch outcome {
@@ -36,6 +39,40 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 					return Failure(err);
 			}
 		});
+	}
+	#end
+
+	#if client
+	/**
+		TODO
+	**/
+	public function callServerApi<T>(action:String, parameters:String):Promise<T> {
+		var trigger:FutureTrigger<Outcome<T,Error>> = Future.trigger();
+		var l = window.location;
+		var query = (l.search != "") ? '${l.search}&' : '?';
+		var url = l.protocol + '//' + l.host + l.pathname + query + 'small-universe-action=$action';
+		var request = new Request(url, {
+			method: 'POST',
+			headers: new Headers({
+				'Content-Type': 'text/json',
+				'x-small-universe-api': '1'
+			}),
+			body: parameters
+		});
+
+		window
+			.fetch(request)
+			.then(function (res:Response) {
+				return res.json();
+			})
+			.then(function (json) {
+				trigger.trigger(Success(json));
+			})
+			.catchError(function (err) {
+				var err = Error.withData('Error calling $action on server', err);
+				trigger.trigger(Failure(err));
+			});
+		return trigger;
 	}
 	#end
 }
