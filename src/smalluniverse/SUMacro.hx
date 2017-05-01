@@ -2,10 +2,10 @@ package smalluniverse;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.macro.ExprTools;
 import react.ReactMacro;
 import react.jsx.JsxSanitize;
 import react.jsx.JsxParser;
+using haxe.macro.ExprTools;
 
 /**
     A collection of macros that are used to help make SmallUniverse work seamlessly on both Client-Side JS and Server-Side multi-platform.
@@ -83,8 +83,7 @@ class SUMacro {
 				var spread = [];
 				var key = null;
 				var ref = null;
-				for (attr in attributes)
-				{
+				for (attr in attributes) {
 					var expr = ReactMacro.parseJsxAttr(attr.value, pos);
 					var name = attr.name;
 					if (name == 'key') key = expr;
@@ -99,6 +98,9 @@ class SUMacro {
                 if (ref != null) attrs.unshift({field:'ref', expr:ref});
                 if (key != null) attrs.unshift({field:'key', expr:key});
 
+				// We actually set the children property in SUServerSideNode.createNodeForComponent.
+				// But we need to fake it here so ReactMacro knows it is provided.
+				attrs.push({field:'children', expr:macro ($a{children}:Array<smalluniverse.SUServerSideComponent.SUServerSideNode>)});
                 var props = ReactMacro.makeProps(spread, attrs, pos);
 
                 if (isHtml) {

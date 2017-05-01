@@ -120,7 +120,7 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 				if (props) {
 					var fields = Reflect.fields(props);
 					if (fields.length > 0) {
-						var ignoredFields = ['onCopy', 'onCut', 'onPaste', 'onCompositionEnd', 'onCompositionStart', 'onCompositionUpdate', 'onKeyDown', 'onKeyPress', 'onKeyUp', 'onFocus', 'onBlur', 'onChange', 'onInput', 'onSubmit', 'onClick', 'onContextMenu', 'onDoubleClick', 'onDrag', 'onDragEnd', 'onDragEnter', 'onDragExit', 'onDragLeave', 'onDragOver', 'onDragStart', 'onDrop', 'onMouseDown', 'onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseOut', 'onMouseOver', 'onMouseUp', 'onSelect', 'onTouchCancel', 'onTouchEnd', 'onTouchMove', 'onTouchStart', 'onScroll', 'onWheel', 'onAbort', 'onCanPlay', 'onCanPlayThrough', 'onDurationChange', 'onEmptied', 'onEncrypted', 'onEnded', 'onError', 'onLoadedData', 'onLoadedMetadata', 'onLoadStart', 'onPause', 'onPlay', 'onPlaying', 'onProgress', 'onRateChange', 'onSeeked', 'onSeeking', 'onStalled', 'onSuspend', 'onTimeUpdate', 'onVolumeChange', 'onWaiting', 'onLoad', 'onError', 'onAnimationStart', 'onAnimationEnd', 'onAnimationIteration', 'onTransitionEnd'];
+						var ignoredFields = ['children', 'onCopy', 'onCut', 'onPaste', 'onCompositionEnd', 'onCompositionStart', 'onCompositionUpdate', 'onKeyDown', 'onKeyPress', 'onKeyUp', 'onFocus', 'onBlur', 'onChange', 'onInput', 'onSubmit', 'onClick', 'onContextMenu', 'onDoubleClick', 'onDrag', 'onDragEnd', 'onDragEnter', 'onDragExit', 'onDragLeave', 'onDragOver', 'onDragStart', 'onDrop', 'onMouseDown', 'onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseOut', 'onMouseOver', 'onMouseUp', 'onSelect', 'onTouchCancel', 'onTouchEnd', 'onTouchMove', 'onTouchStart', 'onScroll', 'onWheel', 'onAbort', 'onCanPlay', 'onCanPlayThrough', 'onDurationChange', 'onEmptied', 'onEncrypted', 'onEnded', 'onError', 'onLoadedData', 'onLoadedMetadata', 'onLoadStart', 'onPause', 'onPlay', 'onPlaying', 'onProgress', 'onRateChange', 'onSeeked', 'onSeeking', 'onStalled', 'onSuspend', 'onTimeUpdate', 'onVolumeChange', 'onWaiting', 'onLoad', 'onError', 'onAnimationStart', 'onAnimationEnd', 'onAnimationIteration', 'onTransitionEnd'];
 
 						for (field in fields) {
 							if (ignoredFields.indexOf(field) > -1) {
@@ -161,7 +161,7 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 			case Component(component, props, children):
 				// We don't render and markup for the component or it's children directly.
 				// We leave it entirely up to the component to render itself.
-				props.children = children;
+				props.children = fromArray(children);
 				return component.render(props).renderToString(startingId);
 			case NodeList(arr):
 				var str = "";
@@ -190,6 +190,8 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 	}
 
 	public static function createNodeForComponent<TProps>(component:SUServerSideRenderFn<TProps>, props:TProps, children:Array<SUServerSideNode>):SUServerSideNode {
+		var childrenNode = (children.length > 0) ? fromArray(children) : null;
+		untyped props.children = childrenNode;
 		return SUServerSideNodeType.Component(component, props, children);
 	}
 
