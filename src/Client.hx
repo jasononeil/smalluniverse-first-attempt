@@ -13,7 +13,7 @@ class Client {
 		onReady(function () {
 			var propsElem = document.getElementById('small-universe-props');
 			var propsJson = propsElem.innerText;
-			var props = haxe.Json.parse(propsJson);
+			var props = haxe.Unserializer.run(propsJson);
 			var container = document.getElementById('small-universe-app');
 			var pageCls = pages.get(propsElem.getAttribute('data-page'));
 			ReactDOM.render(
