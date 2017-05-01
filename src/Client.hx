@@ -1,12 +1,10 @@
-import react.*;
+import smalluniverse.UniversalPage;
 import js.Browser.window;
 import js.Browser.document;
-import smalluniverse.SUMacro.jsx;
-import smalluniverse.UniversalPage;
 
 class Client {
 	static function main() {
-		var pages:Map<String,Class<react.ReactComponent>> = [
+		var pages:Map<String,Class<UniversalPage<Dynamic,Dynamic,Dynamic>>> = [
 			'AboutPage' => AboutPage,
 			'HelloPage' => HelloPage
 		];
@@ -16,10 +14,7 @@ class Client {
 			var props = haxe.Unserializer.run(propsJson);
 			var container = document.getElementById('small-universe-app');
 			var pageCls = pages.get(propsElem.getAttribute('data-page'));
-			ReactDOM.render(
-				React.createElement(pageCls, props),
-				container
-			);
+			smalluniverse.UniversalPage.renderPage(pageCls, props, container);
 		});
 	}
 

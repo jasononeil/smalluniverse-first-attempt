@@ -1,6 +1,9 @@
 package smalluniverse;
 
 #if client
+	import react.ReactDOM;
+	import react.React;
+	import js.html.Element;
 	import js.Browser.window;
 	import js.html.*;
 #end
@@ -9,6 +12,21 @@ using tink.CoreApi;
 
 @:autoBuild(smalluniverse.SUPageBuilder.buildUniversalPage())
 class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TState, TRefs> {
+	/**
+		TODO: This works, but I would like to change it.  Please don't depend on it too heavily.
+		TODO: this is static, and renderToString is an instance method. Should we standardise them?
+	**/
+	public static function renderPage<TProps>(pageCls:Class<UniversalPage<TProps,Dynamic,Dynamic>>, props:TProps, container) {
+		#if client
+		var cls:Class<react.ReactComponent.ReactComponent> = cast pageCls;
+		ReactDOM.render(
+			React.createElement(cls, props),
+			container
+		);
+		#end
+	}
+
+
 	public function new() {
 		// A page should not receive props through a constructor, but through it's get() method.
 		super();
@@ -67,7 +85,7 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 			})
 			.next(function (serializedResponse:String):Promise<T> {
 				var data:{props:TProps, returnValue:T} = haxe.Unserializer.run(serializedResponse);
-				// TODO: update the page props.
+				renderPage(Type.getClass(this), data.props, ReactDOM.findDOMNode(this).parentElement);
 				this.props = data.props;
 				this.forceUpdate();
 				return data.returnValue;
