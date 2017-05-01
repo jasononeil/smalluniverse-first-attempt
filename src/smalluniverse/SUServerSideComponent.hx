@@ -94,6 +94,9 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 	}
 
 	public function renderToString(?startingId:Ref<Int>, ?onlyChild = false):String {
+		if (this == null) {
+			return "";
+		}
 		if (startingId == null) {
 			startingId = Ref.to(0);
 		}
@@ -160,12 +163,23 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 				// We leave it entirely up to the component to render itself.
 				props.children = children;
 				return component.render(props).renderToString(startingId);
+			case NodeList(arr):
+				var str = "";
+				for (node in arr) {
+					str += node.renderToString(startingId);
+				}
+				return str;
 		}
 	}
 
 	@:from
 	public static inline function fromString(str:String):SUServerSideNode {
 		return new SUServerSideNode(Text(str));
+	}
+
+	@:from
+	public static inline function fromArray(arr:Array<SUServerSideNode>):SUServerSideNode {
+		return new SUServerSideNode(NodeList(arr));
 	}
 
 	// We need the automatic cast because macros generate `var type:SUServerSideNode = $expr` where we don't know what $expr is.
@@ -195,6 +209,7 @@ enum SUServerSideNodeType<TProps> {
 	Text(str:String);
 	Html(tagName:String, props:TProps, children:Array<SUServerSideNode>);
 	Component(component:SUServerSideRenderFn<TProps>, props:TProps, children:Array<SUServerSideNode>);
+	NodeList(arr:Array<SUServerSideNode>);
 }
 
 /**

@@ -93,7 +93,6 @@ class SUMacro {
 					else attrs.push({ field:name, expr:expr });
 				}
 
-				// parse children
 				var children = [for (child in jsxChildren) parseJsxNode(child, pos)];
 
 				// inline declaration or createElement?
