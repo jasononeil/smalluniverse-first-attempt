@@ -62,8 +62,15 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 		return Future
 			.ofJsPromise(window.fetch(request))
 			.asPromise()
-			.next(function (res:Response):Promise<T> {
-				return Future.ofJsPromise(res.json());
+			.next(function (res:Response):Promise<String> {
+				return Future.ofJsPromise(res.text());
+			})
+			.next(function (serializedResponse:String):Promise<T> {
+				var data:{props:TProps, returnValue:T} = haxe.Unserializer.run(serializedResponse);
+				// TODO: update the page props.
+				this.props = data.props;
+				this.forceUpdate();
+				return data.returnValue;
 			});
 	}
 	#end

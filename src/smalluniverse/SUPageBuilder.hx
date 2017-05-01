@@ -36,11 +36,14 @@ class SUPageBuilder {
 					checkReturnTypeIsPromise(fn.ret, member.pos);
 					checkArgumentsAreExplicitlyTyped(fn.args, member.pos);
 
-					// TODO: transform the client to make a HTTP call and still return a promise of the same type.
 					#if client
+					// Transform the client to make a HTTP call and still return a promise of the same type.
+					var argExprs = [for (arg in fn.args) macro $i{arg.name}];
 					fn.expr = macro {
 						// TODO: make a HTTP call to return a promise of the same type.
-						return tink.core.Future.sync(Success(null));
+						var argsString = $a{argExprs};
+						var args = haxe.Serializer.run(argsString);
+						return this.callServerApi($v{member.name}, args);
 					}
 					#end
 				default:

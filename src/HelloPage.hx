@@ -1,36 +1,43 @@
 import smalluniverse.UniversalPage;
 import smalluniverse.UniversalComponent;
 import smalluniverse.SUMacro.jsx;
+#if server
+	import sys.io.File;
+	import haxe.Json;
+#elseif client
+	import js.Browser;
+#end
 using tink.CoreApi;
 
-class HelloPage extends UniversalPage<{name:String}, {}, {}> {
-	override function get():Promise<{name:String}> {
-		return {name: "Jason"};
+class HelloPage extends UniversalPage<{name:String, age:Int}, {}, {}> {
+	override function get():Promise<{name:String, age:Int}> {
+		var json = File.getContent('props.json');
+		var props:{name:String, age:Int} = Json.parse(json);
+		return props;
 	}
 
 	override function render():UniversalElement {
-		function MyParagraph(props:{text:String}) {
-			return jsx('<p>${props.text}</p>');
-		}
 		return jsx('<div>
-			<Header text=${"Hello " + this.props.name}></Header>
-			<h2><em>or should I say <strong>${this.props.name.toUpperCase()}</strong></em></h2>
-			<MyParagraph text="Nice to meet you!"></MyParagraph>
+			<h1 onClick=${clickHeader}>Hello ${this.props.name}</h1>
+			<h2><em>How does it feel being <strong>${""+this.props.age}</strong> years old?</em></h2>
+			<p>Nice to meet you! <b>:)</b></p>
 		</div>');
 	}
 
-	override function componentDidMount():Void {
-		trace('We have mounted it');
-	}
-}
-
-class Header extends UniversalComponent<{text:String}, {}, {}> {
-	override function render():UniversalElement {
-		return jsx('<h1 onClick=${alert}>${this.props.text}</h1>');
+	@:serverAction public function addExplanationMark():Promise<String> {
+		var json = File.getContent('props.json');
+		var props:{name:String, age:Int} = Json.parse(json);
+		props.age++;
+		json = Json.stringify(props);
+		File.saveContent('props.json', json);
+		return Sys.getCwd();
 	}
 
 	@:client
-	function alert() {
-		js.Browser.alert("click");
+	function clickHeader() {
+		addExplanationMark().handle(function (outcome:Outcome<String,Error>) {
+			var path = outcome.sure();
+			Browser.alert('Executed at $path');
+		});
 	}
 }

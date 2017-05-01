@@ -31,7 +31,7 @@ class SmallUniverse {
 	// TODO: Figure out a more elegant way of passing in the class and having the injector provide it.
 	// Either use macros, or have Injector.getter(Class) -> returns a lazy function.
 	public function addPage(route:String, pageFn:Void->UniversalPage<Dynamic,Dynamic,Dynamic>) {
-		app.get(route, function (req:Request, res:Response) {
+		app.use(route, function (req:Request, res:Response) {
 			var page = pageFn();
 			var action = req.query.get('small-universe-action');
 			var isApiRequest = req.header.byName('x-small-universe-api').isSuccess();
@@ -60,7 +60,7 @@ class SmallUniverse {
 				return source.all().map(function (outcome) {
 					var bytes = outcome.sure();
 					var str = bytes.toString();
-					var args = haxe.Json.parse(str);
+					var args:Array<Dynamic> = haxe.Unserializer.run(str);
 					return args;
 				});
 			case _:
@@ -71,7 +71,8 @@ class SmallUniverse {
 	static function renderPagePropsJson(page:UniversalPage<Dynamic,Dynamic,Dynamic>, res:Response) {
 		page.get().handle(function (outcome) {
 			var props = outcome.sure();
-			res.json(props);
+			var serializedProps = haxe.Serializer.run(props);
+			res.send(serializedProps);
 		});
 	}
 
@@ -103,8 +104,9 @@ class SmallUniverse {
 			})
 			.handle(function (outcome) {
 				var data = outcome.sure();
-				res.json(data);
-				return data;
+				var serializedData = haxe.Serializer.run(data);
+				res.send(serializedData);
+				return serializedData;
 			});
 	}
 
