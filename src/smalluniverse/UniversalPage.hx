@@ -47,7 +47,6 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 		TODO
 	**/
 	public function callServerApi<T>(action:String, parameters:String):Promise<T> {
-		var trigger:FutureTrigger<Outcome<T,Error>> = Future.trigger();
 		var l = window.location;
 		var query = (l.search != "") ? '${l.search}&' : '?';
 		var url = l.protocol + '//' + l.host + l.pathname + query + 'small-universe-action=$action';
@@ -60,19 +59,12 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 			body: parameters
 		});
 
-		window
-			.fetch(request)
-			.then(function (res:Response) {
-				return res.json();
-			})
-			.then(function (json) {
-				trigger.trigger(Success(json));
-			})
-			.catchError(function (err) {
-				var err = Error.withData('Error calling $action on server', err);
-				trigger.trigger(Failure(err));
+		return Future
+			.ofJsPromise(window.fetch(request))
+			.asPromise()
+			.next(function (res:Response):Promise<T> {
+				return Future.ofJsPromise(res.json());
 			});
-		return trigger;
 	}
 	#end
 }
