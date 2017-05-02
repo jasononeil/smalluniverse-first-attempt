@@ -33,24 +33,7 @@ class SmallUniverse {
 	public function addPage(route:String, pageFn:Void->UniversalPage<Dynamic,Dynamic,Dynamic>) {
 		app.use(route, function (req:Request, res:Response) {
 			var page = pageFn();
-			var action = req.query.get('small-universe-action');
-			var isApiRequest = req.header.byName('x-small-universe-api').isSuccess();
-			if (action != null && action != 'get') {
-				getArgsFromBody(req).next(function (args) {
-					if (isApiRequest) {
-						executeActionAndRenderJson(page, action, args, res);
-					} else {
-						executeActionAndSetRedirect(page, action, args, res, req.url);
-					}
-					return args;
-				});
-			} else {
-				if (isApiRequest) {
-					renderPagePropsJson(page, res);
-				} else {
-					renderPageToHtml(page, res);
-				}
-			}
+			page.route(req, res);
 		});
 	}
 
@@ -93,10 +76,12 @@ class SmallUniverse {
 		});
 	}
 
-	static function executeActionAndRenderJson(page:UniversalPage<Dynamic,Dynamic,Dynamic>, action:String, args:Array<Dynamic>, res:Response) {
-		// TODO: replace this with macros so that people can't choose random functions to execute.
-		var actionPromise:Promise<Any> = Reflect.callMethod(page, Reflect.field(page, action), args);
-		actionPromise
+	static function executeActionAndRenderJson(page:UniversalPage<Dynamic,Dynamic,Dynamic>, action:String, req:Request, res:Response) {
+		// TODO: replace these with macro calls so we're not using Reflect or haxe.Serializer
+		getArgsFromBody(req)
+			.next(function (args):Promise<Any> {
+				return Reflect.callMethod(page, Reflect.field(page, action), args);
+			})
 			.next(function (val) {
 				return page.get().next(function (props) {
 					return {
@@ -109,16 +94,18 @@ class SmallUniverse {
 				var data = outcome.sure();
 				var serializedData = haxe.Serializer.run(data);
 				res.send(serializedData);
-				return serializedData;
 			});
 	}
 
-	static function executeActionAndSetRedirect(page:UniversalPage<Dynamic,Dynamic,Dynamic>, action:String, args:Array<Dynamic>, res:Response, redirectUrl:String) {
-		// TODO: replace this with macros so that people can't choose random functions to execute.
-		var actionPromise:Promise<Any> = Reflect.callMethod(page, Reflect.field(page, action), args);
-		actionPromise
+	static function executeActionAndSetRedirect(page:UniversalPage<Dynamic,Dynamic,Dynamic>, action:String, req:Request, res:Response) {
+		// TODO: replace these with macro calls so we're not using Reflect
+		getArgsFromBody(req)
+			.next(function (args):Promise<Any> {
+				return Reflect.callMethod(page, Reflect.field(page, action), args);
+			})
 			.handle(function (outcome) {
 				outcome.sure();
+				var redirectUrl = req.url;
 				res.redirect(redirectUrl);
 			});
 	}
