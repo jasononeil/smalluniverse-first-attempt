@@ -20,7 +20,7 @@ class HelloPage extends UniversalPage<{name:String, age:Int}, {}, {}> {
 	override function render():UniversalElement {
 		return jsx('<div>
 			<h1 onClick=${clickHeader}>Hello ${this.props.name}</h1>
-			<h2><em>How does it feel being <strong>${""+this.props.age}</strong> years old?</em></h2>
+			<h2 onClick=${clickHeader2}><em>How does it feel being <strong>${""+this.props.age}</strong> years old?</em></h2>
 			<p>Nice to meet you! <b>:)</b></p>
 			<input onKeyUp=${keyup} />
 		</div>');
@@ -49,6 +49,14 @@ class HelloPage extends UniversalPage<{name:String, age:Int}, {}, {}> {
 		addExplanationMark().handle(function (outcome:Outcome<String,Error>) {
 			var path = outcome.sure();
 			Browser.alert('Executed at $path');
+		});
+	}
+
+	@:client
+	function clickHeader2() {
+		get().handle(function (outcome:Outcome<{name:String, age:Int},Error>) {
+			var newProps = outcome.sure();
+			Browser.alert('Updating props with ${newProps.name}, ${newProps.age}');
 		});
 	}
 

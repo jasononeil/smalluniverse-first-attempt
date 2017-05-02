@@ -21,6 +21,10 @@ class SUPageBuilder {
 						// TODO: make a HTTP call to return a promise of the same type.
 						return tink.core.Future.sync(Success(null));
 					}
+					fn.expr = macro {
+						var args = haxe.Serializer.run([]);
+						return this.callServerApi('get', args);
+					}
 				#end
 				return;
 			}
@@ -40,10 +44,9 @@ class SUPageBuilder {
 					// Transform the client to make a HTTP call and still return a promise of the same type.
 					var argExprs = [for (arg in fn.args) macro $i{arg.name}];
 					fn.expr = macro {
-						// TODO: make a HTTP call to return a promise of the same type.
-						var argsString = $a{argExprs};
-						var args = haxe.Serializer.run(argsString);
-						return this.callServerApi($v{member.name}, args);
+						var args = $a{argExprs};
+						var argsString = haxe.Serializer.run(args);
+						return this.callServerApi($v{member.name}, argsString);
 					}
 					#end
 				default:

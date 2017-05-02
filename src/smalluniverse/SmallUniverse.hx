@@ -71,7 +71,10 @@ class SmallUniverse {
 	static function renderPagePropsJson(page:UniversalPage<Dynamic,Dynamic,Dynamic>, res:Response) {
 		page.get().handle(function (outcome) {
 			var props = outcome.sure();
-			var serializedProps = haxe.Serializer.run(props);
+			var responseData = {
+				props: props
+			};
+			var serializedProps = haxe.Serializer.run(responseData);
 			res.send(serializedProps);
 		});
 	}

@@ -85,10 +85,16 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 			})
 			.next(function (serializedResponse:String):Promise<T> {
 				var data:{props:TProps, returnValue:T} = haxe.Unserializer.run(serializedResponse);
+				// TODO: check if this will create a new instance. Can I keep local state or will it be replaced?
 				renderPage(Type.getClass(this), data.props, ReactDOM.findDOMNode(this).parentElement);
 				this.props = data.props;
-				this.forceUpdate();
-				return data.returnValue;
+				// The return value for get() returns the props themselves.
+				if (action == 'get') {
+					var castProps:T = cast data.props;
+					return castProps;
+				} else {
+					return data.returnValue;
+				}
 			});
 	}
 	#end
