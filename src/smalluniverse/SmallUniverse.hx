@@ -35,7 +35,7 @@ class SmallUniverse {
 			var page = pageFn();
 			var action = req.query.get('small-universe-action');
 			var isApiRequest = req.header.byName('x-small-universe-api').isSuccess();
-			if (action != null) {
+			if (action != null && action != 'get') {
 				getArgsFromBody(req).next(function (args) {
 					if (isApiRequest) {
 						executeActionAndRenderJson(page, action, args, res);
