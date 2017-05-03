@@ -83,14 +83,15 @@ class SUPageBuilder {
 
 		// Add cases for all server actions
 		for (member in getServerActions(cb)) {
+			var fn = member.getFunction().sure();
 			actionCases.push({
 				values: [macro $v{member.name}],
-				expr: getExprForExecuteActionAndRenderJson(member.name, member.pos),
+				expr: getExprForExecuteActionAndRenderJson(member.name, fn.ret, fn.args.length, member.pos),
 				guard: macro isApiRequest
 			});
 			actionCases.push({
 				values: [macro $v{member.name}],
-				expr: getExprForExecuteActionAndSetRedirect(member.name, member.pos),
+				expr: getExprForExecuteActionAndSetRedirect(member.name, fn.ret, fn.args.length, member.pos),
 				guard: macro !isApiRequest
 			});
 		}
@@ -127,13 +128,14 @@ class SUPageBuilder {
 		#end
 	}
 
-	static function getExprForExecuteActionAndRenderJson(action:String, pos:Position) {
+	static function getExprForExecuteActionAndRenderJson(action:String, expectedType:ComplexType, numArgs:Int, pos:Position) {
+		var actionArgs = [for (i in 0...numArgs) macro args[$v{i}]];
 		return macro
 			@:access(smalluniverse.SmallUniverse)
 			@:pos(pos)
 			smalluniverse.SmallUniverse.getArgsFromBody(req)
-				.next(function (args):tink.core.Promise<Any> {
-					return Reflect.callMethod(this, Reflect.field(this, $v{action}), args);
+				.next(function (args):tink.core.Promise<$expectedType> {
+					return this.$action($a{actionArgs});
 				})
 				.next(function (val) {
 					return this.get().next(function (props) {
@@ -150,13 +152,14 @@ class SUPageBuilder {
 				});
 	}
 
-	static function getExprForExecuteActionAndSetRedirect(action:String, pos:Position) {
+	static function getExprForExecuteActionAndSetRedirect(action:String, expectedType:ComplexType, numArgs:Int, pos:Position) {
+		var actionArgs = [for (i in 0...numArgs) macro args[$v{i}]];
 		return macro
 			@:access(smalluniverse.SmallUniverse)
 			@:pos(pos)
 			smalluniverse.SmallUniverse.getArgsFromBody(req)
-				.next(function (args):tink.core.Promise<Any> {
-					return Reflect.callMethod(this, Reflect.field(this, $v{action}), args);
+				.next(function (args):tink.core.Promise<$expectedType> {
+					return this.$action($a{actionArgs});
 				})
 				.handle(function (outcome) {
 					tink.CoreApi.OutcomeTools.sure(outcome);
