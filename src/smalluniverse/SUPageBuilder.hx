@@ -85,12 +85,12 @@ class SUPageBuilder {
 		for (member in getServerActions(cb)) {
 			actionCases.push({
 				values: [macro $v{member.name}],
-				expr: macro smalluniverse.SmallUniverse.executeActionAndRenderJson(this, $v{member.name}, req, res),
+				expr: getExprForExecuteActionAndRenderJson(member.name, member.pos),
 				guard: macro isApiRequest
 			});
 			actionCases.push({
 				values: [macro $v{member.name}],
-				expr: macro smalluniverse.SmallUniverse.executeActionAndSetRedirect(this, $v{member.name}, req, res),
+				expr: getExprForExecuteActionAndSetRedirect(member.name, member.pos),
 				guard: macro !isApiRequest
 			});
 		}
@@ -98,12 +98,12 @@ class SUPageBuilder {
 		// Add cases for "get" method, which is also called if no action is specified.
 		actionCases.push({
 			values: [macro "get", macro null],
-			expr: macro smalluniverse.SmallUniverse.renderPagePropsJson(this, res),
+			expr: getExprForRenderPagePropsToJson(cb.target.pos),
 			guard: macro isApiRequest
 		});
 		actionCases.push({
 			values: [macro "get", macro null],
-			expr: macro smalluniverse.SmallUniverse.renderPageToHtml(this, res),
+			expr: getExprForRenderPageToHtml(cb.target.pos),
 			guard: macro !isApiRequest
 		});
 
@@ -119,11 +119,79 @@ class SUPageBuilder {
 			@:access(smalluniverse.SmallUniverse)
 			override public function route(req:monsoon.Request, res:monsoon.Response) {
 				var action = req.query.get('small-universe-action');
-				var isApiRequest = req.header.byName('x-small-universe-api').isSuccess();
+				var isApiRequest = tink.CoreApi.OutcomeTools.isSuccess(req.header.byName('x-small-universe-api'));
 				$switchExpr;
 			}
 		}).fields[0];
 		cb.addMember(routingMethod);
 		#end
+	}
+
+	static function getExprForExecuteActionAndRenderJson(action:String, pos:Position) {
+		return macro
+			@:access(smalluniverse.SmallUniverse)
+			@:pos(pos)
+			smalluniverse.SmallUniverse.getArgsFromBody(req)
+				.next(function (args):tink.core.Promise<Any> {
+					return Reflect.callMethod(this, Reflect.field(this, $v{action}), args);
+				})
+				.next(function (val) {
+					return this.get().next(function (props) {
+						return {
+							props: props,
+							returnValue: val
+						}
+					});
+				})
+				.handle(function (outcome) {
+					var data = tink.CoreApi.OutcomeTools.sure(outcome);
+					var serializedData = haxe.Serializer.run(data);
+					res.send(serializedData);
+				});
+	}
+
+	static function getExprForExecuteActionAndSetRedirect(action:String, pos:Position) {
+		return macro
+			@:access(smalluniverse.SmallUniverse)
+			@:pos(pos)
+			smalluniverse.SmallUniverse.getArgsFromBody(req)
+				.next(function (args):tink.core.Promise<Any> {
+					return Reflect.callMethod(this, Reflect.field(this, $v{action}), args);
+				})
+				.handle(function (outcome) {
+					tink.CoreApi.OutcomeTools.sure(outcome);
+					var redirectUrl = req.url;
+					res.redirect(redirectUrl);
+				});
+	}
+
+	static function getExprForRenderPageToHtml(pos:Position) {
+		return macro
+			@:access(smalluniverse.SmallUniverse)
+			@:pos(pos)
+			this.renderToString().handle(function (outcome) {
+				var appHtml = tink.CoreApi.OutcomeTools.sure(outcome);
+				var pageName = Type.getClassName(Type.getClass(this));
+				var propsJson = haxe.Serializer.run(this.props);
+				var html = smalluniverse.SmallUniverse.template;
+				html = StringTools.replace(html, '{BODY}', appHtml);
+				html = StringTools.replace(html, '{PAGE}', pageName);
+				html = StringTools.replace(html, '{PROPS}', propsJson);
+				res.send(html);
+			});
+	}
+
+	static function getExprForRenderPagePropsToJson(pos:Position) {
+		return macro
+			@:access(smalluniverse.SmallUniverse)
+			@:pos(pos)
+			this.get().handle(function (outcome) {
+				var props = tink.CoreApi.OutcomeTools.sure(outcome);
+				var responseData = {
+					props: props
+				};
+				var serializedProps = haxe.Serializer.run(responseData);
+				res.send(serializedProps);
+			});
 	}
 }
