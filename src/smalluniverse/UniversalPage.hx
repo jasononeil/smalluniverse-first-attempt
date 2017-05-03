@@ -3,6 +3,7 @@ package smalluniverse;
 #if client
 	import react.ReactDOM;
 	import react.React;
+	import tink.json.Serialized;
 	import js.html.Element;
 	import js.Browser.window;
 	import js.html.*;
@@ -71,11 +72,15 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 	}
 	#end
 
+	function deserializeProps(json:String):TProps {
+		return throw 'Assert: should be implemented by macro';
+	}
+
 	#if client
 	/**
 		TODO
 	**/
-	public function callServerApi<T>(action:String, parameters:String):Promise<T> {
+	public function callServerApi(action:String, parameters:String):Promise<String> {
 		var l = window.location;
 		var query = (l.search != "") ? '${l.search}&' : '?';
 		var url = l.protocol + '//' + l.host + l.pathname + query + 'small-universe-action=$action';
@@ -94,19 +99,20 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 			.next(function (res:Response):Promise<String> {
 				return Future.ofJsPromise(res.text());
 			})
-			.next(function (serializedResponse:String):Promise<T> {
-				var data:{props:TProps, returnValue:T} = haxe.Unserializer.run(serializedResponse);
-				trace('We received back for $action', data);
+			.next(function (serializedResponse:String):Promise<String> {
+				var data:{props:Serialized<{}>, ?returnValue:Serialized<{}>} =
+					try {
+						tink.Json.parse(serializedResponse);
+					} catch (e:Dynamic) {
+						trace('Error: $e');
+						js.Lib.rethrow();
+						null;
+					}
+				this.props = this.deserializeProps(data.props);
 				// TODO: check if this will create a new instance. Can I keep local state or will it be replaced?
-				renderPage(Type.getClass(this), data.props, ReactDOM.findDOMNode(this).parentElement);
-				this.props = data.props;
-				// The return value for get() returns the props themselves.
-				if (action == 'get') {
-					var castProps:T = cast data.props;
-					return castProps;
-				} else {
-					return data.returnValue;
-				}
+				renderPage(Type.getClass(this), this.props, ReactDOM.findDOMNode(this).parentElement);
+				var str:String = (action=='get') ? data.props : data.returnValue;
+				return str;
 			});
 	}
 	#end

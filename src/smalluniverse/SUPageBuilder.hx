@@ -9,22 +9,35 @@ class SUPageBuilder {
 		return ClassBuilder.run([
 			processGetMethod,
 			processServerActionMethods,
-			addRoutingMethod
+			addRoutingMethod,
+			addDeserializePropsMethod
 		]);
 	}
 
+	static function getPropsTypeForClass(cb:ClassBuilder):ComplexType {
+		// Note: we are assuming we are extending UniversalPage<TProps,...>. Which may not be the case.
+		return cb.target.superClass.params[0].toComplex();
+	}
+
 	static function processGetMethod(cb:ClassBuilder):Void {
+		var propsComplexType = getPropsTypeForClass(cb);
 		for (member in cb) {
 			if (member.name == "get") {
 				#if client
 					var fn = member.getFunction().sure();
 					fn.expr = macro {
-						// TODO: make a HTTP call to return a promise of the same type.
-						return tink.core.Future.sync(Success(null));
-					}
-					fn.expr = macro {
 						var args = haxe.Serializer.run([]);
-						return this.callServerApi('get', args);
+						return this.callServerApi('get', args).next(function (serializedProps:String) {
+							var props:$propsComplexType =
+								try {
+									tink.Json.parse(serializedProps);
+								} catch (e:Dynamic) {
+									trace('Error parsing properties: '+e);
+									js.Lib.rethrow();
+									null;
+								}
+							return props;
+						});
 					}
 				#end
 				return;
@@ -36,7 +49,7 @@ class SUPageBuilder {
 		for (member in getServerActions(cb)) {
 			// Check that all arguments are typed, and return type is a promise.
 			var fn = member.getFunction().sure();
-			checkReturnTypeIsPromise(fn.ret, member.pos);
+			var resultType = checkReturnTypeIsPromise(fn.ret, member.pos);
 			checkArgumentsAreExplicitlyTyped(fn.args, member.pos);
 
 			#if client
@@ -45,7 +58,17 @@ class SUPageBuilder {
 			fn.expr = macro {
 				var args = $a{argExprs};
 				var argsString = haxe.Serializer.run(args);
-				return this.callServerApi($v{member.name}, argsString);
+				return this.callServerApi($v{member.name}, argsString).next(function (serializedResult:String) {
+					var result:$resultType =
+						try {
+							tink.Json.parse(serializedResult);
+						} catch (e:Dynamic) {
+							trace('Error parsing server action result: '+e);
+							js.Lib.rethrow();
+							null;
+						}
+					return result;
+				});
 			}
 			#end
 		}
@@ -60,12 +83,14 @@ class SUPageBuilder {
 		});
 	}
 
-	static function checkReturnTypeIsPromise(ret:ComplexType, pos:Position) {
+	static function checkReturnTypeIsPromise(ret:ComplexType, pos:Position):ComplexType {
 		var type = ret.toType(pos).sure();
 		switch Context.follow(type) {
-			case TAbstract(_.toString() => "tink.core.Promise", params):
+			case TAbstract(_.toString() => "tink.core.Promise", [subType]):
+				return subType.toComplex();
 			case _:
 				Context.error('Function should return a tink.core.Promise', pos);
+				return null;
 		}
 	}
 
@@ -84,14 +109,15 @@ class SUPageBuilder {
 		// Add cases for all server actions
 		for (member in getServerActions(cb)) {
 			var fn = member.getFunction().sure();
+			var resultComplexType = checkReturnTypeIsPromise(fn.ret, member.pos);
 			actionCases.push({
 				values: [macro $v{member.name}],
-				expr: getExprForExecuteActionAndRenderJson(member.name, fn.ret, fn.args.length, member.pos),
+				expr: getExprForExecuteActionAndRenderJson(member.name, resultComplexType, fn.args.length, member.pos),
 				guard: macro isApiRequest
 			});
 			actionCases.push({
 				values: [macro $v{member.name}],
-				expr: getExprForExecuteActionAndSetRedirect(member.name, fn.ret, fn.args.length, member.pos),
+				expr: getExprForExecuteActionAndSetRedirect(member.name, resultComplexType, fn.args.length, member.pos),
 				guard: macro !isApiRequest
 			});
 		}
@@ -147,7 +173,7 @@ class SUPageBuilder {
 				})
 				.handle(function (outcome) {
 					var data = tink.CoreApi.OutcomeTools.sure(outcome);
-					var serializedData = haxe.Serializer.run(data);
+					var serializedData:String = tink.Json.stringify(data);
 					res.send(serializedData);
 				});
 	}
@@ -175,7 +201,7 @@ class SUPageBuilder {
 			this.renderToString().handle(function (outcome) {
 				var appHtml = tink.CoreApi.OutcomeTools.sure(outcome);
 				var pageName = Type.getClassName(Type.getClass(this));
-				var propsJson = haxe.Serializer.run(this.props);
+				var propsJson = tink.Json.stringify(this.props);
 				var html = smalluniverse.SmallUniverse.template;
 				html = StringTools.replace(html, '{BODY}', appHtml);
 				html = StringTools.replace(html, '{PAGE}', pageName);
@@ -193,8 +219,27 @@ class SUPageBuilder {
 				var responseData = {
 					props: props
 				};
-				var serializedProps = haxe.Serializer.run(responseData);
+				var serializedProps = tink.Json.stringify(responseData);
 				res.send(serializedProps);
 			});
+	}
+
+	static function addDeserializePropsMethod(cb:ClassBuilder) {
+		#if client
+		var propsCt = getPropsTypeForClass(cb);
+		var routingMethod = (macro class Tmp {
+			@:access(smalluniverse.SmallUniverse)
+			override public function deserializeProps(serializedProps:String):$propsCt {
+				return try {
+					tink.Json.parse(serializedProps);
+				} catch (e:Dynamic) {
+					trace('Error parsing properties: '+e);
+					js.Lib.rethrow();
+					null;
+				}
+			}
+		}).fields[0];
+		cb.addMember(routingMethod);
+		#end
 	}
 }

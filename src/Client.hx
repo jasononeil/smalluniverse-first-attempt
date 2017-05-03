@@ -11,7 +11,9 @@ class Client {
 		onReady(function () {
 			var propsElem = document.getElementById('small-universe-props');
 			var propsJson = propsElem.innerText;
-			var props = haxe.Unserializer.run(propsJson);
+			// TODO: move this logic to a function on the page.
+			// Use macros to generate a `page.parsePropsJson():TProps` method.
+			var props = haxe.Json.parse(propsJson);
 			var container = document.getElementById('small-universe-app');
 			var pageCls = pages.get(propsElem.getAttribute('data-page'));
 			smalluniverse.UniversalPage.renderPage(pageCls, props, container);
