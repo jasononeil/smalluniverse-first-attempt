@@ -1,8 +1,8 @@
 package smalluniverse;
 
-import dodrugs.Injector;
 import smalluniverse.SUServerSideComponent;
 import smalluniverse.SUMacro.jsx;
+import smalluniverse.LazyUniversalPage;
 import monsoon.Request;
 import monsoon.Response;
 using StringTools;
@@ -21,18 +21,14 @@ class SmallUniverse {
 	</html>';
 
 	public var app:Monsoon;
-	public var injector:Injector<"smalluniverse">;
 
-	public function new(monsoonApp:Monsoon, injector:Injector<"smalluniverse">) {
+	public function new(monsoonApp:Monsoon) {
 		this.app = monsoonApp;
-		this.injector = injector;
 	}
 
-	// TODO: Figure out a more elegant way of passing in the class and having the injector provide it.
-	// Either use macros, or have Injector.getter(Class) -> returns a lazy function.
-	public function addPage(route:String, pageFn:Void->UniversalPage<Dynamic,Dynamic,Dynamic>) {
+	public function addPage(route:String, pageToUse:LazyUniversalPage) {
 		app.use(route, function (req:Request, res:Response) {
-			var page = pageFn();
+			var page = pageToUse();
 			page.route(req, res);
 		});
 	}
