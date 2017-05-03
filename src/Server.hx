@@ -5,13 +5,9 @@ import dodrugs.Injector;
 class Server {
 	static function main() {
 		var app = new Monsoon();
-		var injector = Injector.create('smalluniverse', [
-			HelloPage,
-			AboutPage
-		]);
-		var smallUniverse = new SmallUniverse(app, injector);
-		smallUniverse.addPage('/', function () return injector.get(HelloPage));
-		smallUniverse.addPage('/about', function () return injector.get(AboutPage));
+		var smallUniverse = new SmallUniverse(app, null);
+		smallUniverse.addPage('/', function () return new HelloPage());
+		smallUniverse.addPage('/about', function () return new AboutPage());
 		app.listen(3000);
 	}
 }
