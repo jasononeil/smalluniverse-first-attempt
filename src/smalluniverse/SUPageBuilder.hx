@@ -26,8 +26,7 @@ class SUPageBuilder {
 				#if client
 					var fn = member.getFunction().sure();
 					fn.expr = macro {
-						var args = haxe.Serializer.run([]);
-						return this.callServerApi('get', args).next(function (serializedProps:String) {
+						return this.callServerApi('get').next(function (serializedProps:String) {
 							var props:$propsComplexType =
 								try {
 									tink.Json.parse(serializedProps);
@@ -54,11 +53,13 @@ class SUPageBuilder {
 
 			#if client
 			// Transform the client to make a HTTP call and still return a promise of the same type.
-			var argExprs = [for (arg in fn.args) macro $i{arg.name}];
+			var setArgsInFormData = [for (arg in fn.args) {
+				macro formData.append($v{arg.name}, tink.Json.stringify($i{arg.name}));
+			}];
 			fn.expr = macro {
-				var args = $a{argExprs};
-				var argsString = haxe.Serializer.run(args);
-				return this.callServerApi($v{member.name}, argsString).next(function (serializedResult:String) {
+				var formData = new js.html.FormData();
+				$b{setArgsInFormData};
+				return this.callServerApi($v{member.name}, formData).next(function (serializedResult:String) {
 					var result:$resultType =
 						try {
 							tink.Json.parse(serializedResult);
@@ -109,15 +110,16 @@ class SUPageBuilder {
 		// Add cases for all server actions
 		for (member in getServerActions(cb)) {
 			var fn = member.getFunction().sure();
+			var argNames = [for (a in fn.args) a.name];
 			var resultComplexType = checkReturnTypeIsPromise(fn.ret, member.pos);
 			actionCases.push({
 				values: [macro $v{member.name}],
-				expr: getExprForExecuteActionAndRenderJson(member.name, resultComplexType, fn.args.length, member.pos),
+				expr: getExprForExecuteActionAndRenderJson(member.name, resultComplexType, argNames, member.pos),
 				guard: macro isApiRequest
 			});
 			actionCases.push({
 				values: [macro $v{member.name}],
-				expr: getExprForExecuteActionAndSetRedirect(member.name, resultComplexType, fn.args.length, member.pos),
+				expr: getExprForExecuteActionAndSetRedirect(member.name, resultComplexType, argNames, member.pos),
 				guard: macro !isApiRequest
 			});
 		}
@@ -154,13 +156,13 @@ class SUPageBuilder {
 		#end
 	}
 
-	static function getExprForExecuteActionAndRenderJson(action:String, expectedType:ComplexType, numArgs:Int, pos:Position) {
-		var actionArgs = [for (i in 0...numArgs) macro args[$v{i}]];
+	static function getExprForExecuteActionAndRenderJson(action:String, expectedType:ComplexType, argNames:Array<String>, pos:Position) {
+		var actionArgs = [for (argName in argNames) macro tink.Json.parse(params[$v{argName}])];
 		return macro
 			@:access(smalluniverse.SmallUniverse)
 			@:pos(pos)
 			smalluniverse.SmallUniverse.getArgsFromBody(req)
-				.next(function (args):tink.core.Promise<$expectedType> {
+				.next(function (params):tink.core.Promise<$expectedType> {
 					return this.$action($a{actionArgs});
 				})
 				.next(function (val) {
@@ -178,13 +180,13 @@ class SUPageBuilder {
 				});
 	}
 
-	static function getExprForExecuteActionAndSetRedirect(action:String, expectedType:ComplexType, numArgs:Int, pos:Position) {
-		var actionArgs = [for (i in 0...numArgs) macro args[$v{i}]];
+	static function getExprForExecuteActionAndSetRedirect(action:String, expectedType:ComplexType, argNames:Array<String>, pos:Position) {
+		var actionArgs = [for (argName in argNames) macro tink.Json.parse(params[$v{argName}])];
 		return macro
 			@:access(smalluniverse.SmallUniverse)
 			@:pos(pos)
 			smalluniverse.SmallUniverse.getArgsFromBody(req)
-				.next(function (args):tink.core.Promise<$expectedType> {
+				.next(function (params):tink.core.Promise<$expectedType> {
 					return this.$action($a{actionArgs});
 				})
 				.handle(function (outcome) {

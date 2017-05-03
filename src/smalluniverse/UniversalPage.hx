@@ -4,7 +4,7 @@ package smalluniverse;
 	import react.ReactDOM;
 	import react.React;
 	import tink.json.Serialized;
-	import js.html.Element;
+	import js.html.FormData;
 	import js.Browser.window;
 	import js.html.*;
 #elseif server
@@ -80,17 +80,19 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 	/**
 		TODO
 	**/
-	public function callServerApi(action:String, parameters:String):Promise<String> {
+	public function callServerApi(action:String, ?formData:FormData):Promise<String> {
+		if (formData == null) {
+			formData = new FormData();
+		}
 		var l = window.location;
 		var query = (l.search != "") ? '${l.search}&' : '?';
 		var url = l.protocol + '//' + l.host + l.pathname + query + 'small-universe-action=$action';
 		var request = new Request(url, {
 			method: 'POST',
 			headers: new Headers({
-				'Content-Type': 'text/json',
 				'x-small-universe-api': '1'
 			}),
-			body: parameters
+			body: formData
 		});
 
 		return Future

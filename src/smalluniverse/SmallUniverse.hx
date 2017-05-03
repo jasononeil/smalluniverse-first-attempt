@@ -33,17 +33,21 @@ class SmallUniverse {
 		});
 	}
 
-	static function getArgsFromBody(req:Request):Promise<Array<Dynamic>> {
+	static function getArgsFromBody(req:Request):Promise<Map<String,String>> {
 		switch req.body {
 			case Plain(source):
-				return source.all().map(function (outcome) {
-					var bytes = outcome.sure();
-					var str = bytes.toString();
-					var args:Array<Dynamic> = haxe.Unserializer.run(str);
-					return args;
-				});
-			case _:
-				throw 'Multipart requests are not supported in SmallUniverse yet';
+				throw 'Expected multipart/form data';
+			case Parsed(structuredBody):
+				var params = new Map();
+				for (part in structuredBody) {
+					switch part.value {
+						case Value(v):
+							params[part.name] = v;
+  						case File(handle):
+						  	// TODO
+					}
+				}
+				return params;
 		}
 	}
 }
