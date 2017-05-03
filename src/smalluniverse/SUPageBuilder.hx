@@ -108,7 +108,7 @@ class SUPageBuilder {
 		});
 
 		// Add a default case that 404s, and combine it
-		var defaultCase = macro res.error(404, 'Action '+action+' not found');
+		var defaultCase = macro super.route(req, res);
 		var switchExpr = {
 			expr: ESwitch(macro action, actionCases, defaultCase),
 			pos: cb.target.pos
