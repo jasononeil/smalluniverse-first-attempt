@@ -6,6 +6,7 @@ package smalluniverse;
 	import tink.json.Serialized;
 	import js.html.FormData;
 	import js.Browser.window;
+	import js.Browser.document;
 	import js.html.*;
 #elseif server
 	import monsoon.Request;
@@ -16,21 +17,6 @@ using tink.CoreApi;
 
 @:autoBuild(smalluniverse.SUPageBuilder.buildUniversalPage())
 class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TState, TRefs> {
-	/**
-		TODO: This works, but I would like to change it.  Please don't depend on it too heavily.
-		TODO: this is static, and renderToString is an instance method. Should we standardise them?
-	**/
-	public static function renderPage<TProps>(pageCls:Class<UniversalPage<TProps,Dynamic,Dynamic>>, props:TProps, container) {
-		#if client
-		var cls:Class<react.ReactComponent.ReactComponent> = cast pageCls;
-		ReactDOM.render(
-			React.createElement(cls, props),
-			container
-		);
-		#end
-	}
-
-
 	public function new() {
 		// A page should not receive props through a constructor, but through it's get() method.
 		super();
@@ -78,9 +64,33 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 
 	#if client
 	/**
+		TODO:
+	**/
+	public static function startClientRendering() {
+		var propsElem = document.getElementById('small-universe-props');
+		var pageCls = Type.resolveClass(propsElem.getAttribute('data-page'));
+		var propsJson = propsElem.innerText;
+		var page = Type.createInstance(pageCls, []);
+		page.props = page.deserializeProps(propsJson);
+		page.doClientRender();
+	}
+
+	function doClientRender<TProps>() {
+		#if client
+		var pageCls:Class<react.ReactComponent.ReactComponent> = cast Type.getClass(this);
+		// Note: React is smart enough to maintain our instance and not recreate a new one,
+		// even though we are passing in the class and not the instance.
+		ReactDOM.render(
+			React.createElement(pageCls, this.props),
+			document.getElementById('small-universe-app')
+		);
+		#end
+	}
+
+	/**
 		TODO
 	**/
-	public function callServerApi(action:String, ?formData:FormData):Promise<String> {
+	function callServerApi(action:String, ?formData:FormData):Promise<String> {
 		if (formData == null) {
 			formData = new FormData();
 		}
@@ -111,9 +121,7 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 						null;
 					}
 				this.props = this.deserializeProps(data.props);
-				// Note: React is smart enough to maintain our instance and not recreate a new one,
-				// even though we are passing in the class and not the instance.
-				renderPage(Type.getClass(this), this.props, ReactDOM.findDOMNode(this).parentElement);
+				doClientRender();
 				var str:String = (action=='get') ? data.props : data.returnValue;
 				return str;
 			});
