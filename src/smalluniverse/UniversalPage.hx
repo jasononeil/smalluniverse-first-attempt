@@ -111,7 +111,8 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 						null;
 					}
 				this.props = this.deserializeProps(data.props);
-				// TODO: check if this will create a new instance. Can I keep local state or will it be replaced?
+				// Note: React is smart enough to maintain our instance and not recreate a new one,
+				// even though we are passing in the class and not the instance.
 				renderPage(Type.getClass(this), this.props, ReactDOM.findDOMNode(this).parentElement);
 				var str:String = (action=='get') ? data.props : data.returnValue;
 				return str;
