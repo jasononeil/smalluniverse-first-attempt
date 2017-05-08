@@ -17,9 +17,28 @@ using tink.CoreApi;
 
 @:autoBuild(smalluniverse.SUPageBuilder.buildUniversalPage())
 class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TState, TRefs> {
+
+	/**
+	The template to use for rendering basic page markup server side.
+
+	The default should be sufficient for most use cases.
+
+	Use `{BODY}`, `{HEAD}`, `{PAGE}` and `{PROPS}` literals as insertion points.
+	**/
+	static var template:String = '<html>
+		<head>{HEAD}</head>
+		<body>
+			<div id="small-universe-app">{BODY}</div>
+			<script id="small-universe-props" type="text/json" data-page="{PAGE}">{PROPS}</script>
+		</body>
+	</html>';
+
+	public var head(default, null):UniversalPageHead;
+
 	public function new() {
 		// A page should not receive props through a constructor, but through it's get() method.
 		super();
+		this.head = new UniversalPageHead();
 	}
 	/**
 		Retrieve the properties for this page.

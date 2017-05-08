@@ -11,6 +11,13 @@ import smalluniverse.SUMacro.jsx;
 using tink.CoreApi;
 
 class HelloPage extends UniversalPage<{name:String, age:Int}, {}, {}> {
+
+	public function new() {
+		super();
+		this.head.addScript('react-test.bundle.js');
+		this.head.setTitle('Hello!');
+	}
+
 	override function get():Promise<{name:String, age:Int}> {
 		var json = File.getContent('props.json');
 		var props:{name:String, age:Int} = Json.parse(json);

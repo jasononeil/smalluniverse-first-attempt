@@ -8,6 +8,8 @@ class AboutPage extends UniversalPage<{}, {}, {}> {
 	}
 
 	override function render() {
+		this.head.addScript('react-test.bundle.js');
+		this.head.setTitle('About!');
 		return jsx('<div>
 			<h1 onClick={handleClick}>About!</h1>
 			<a href="/">Link to home</a>

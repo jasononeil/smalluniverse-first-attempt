@@ -10,16 +10,6 @@ using tink.CoreApi;
 
 class SmallUniverse {
 
-	static var template:String = '<html>
-		<head>
-			<script src="react-test.bundle.js" async></script>
-		</head>
-		<body>
-			<div id="small-universe-app">{BODY}</div>
-			<script id="small-universe-props" type="text/json" data-page="{PAGE}">{PROPS}</script>
-		</body>
-	</html>';
-
 	public var app:Monsoon;
 
 	public function new(monsoonApp:Monsoon) {

@@ -202,10 +202,12 @@ class SUPageBuilder {
 			@:pos(pos)
 			this.renderToString().handle(function (outcome) {
 				var appHtml = tink.CoreApi.OutcomeTools.sure(outcome);
-				var pageName = Type.getClassName(Type.getClass(this));
 				var propsJson = tink.Json.stringify(this.props);
-				var html = smalluniverse.SmallUniverse.template;
+				var pageName = Type.getClassName(Type.getClass(this));
+				var head = this.head.renderToString();
+				var html = smalluniverse.UniversalPage.template;
 				html = StringTools.replace(html, '{BODY}', appHtml);
+				html = StringTools.replace(html, '{HEAD}', head);
 				html = StringTools.replace(html, '{PAGE}', pageName);
 				html = StringTools.replace(html, '{PROPS}', propsJson);
 				res.send(html);
