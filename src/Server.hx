@@ -6,7 +6,7 @@ class Server {
 		var app = new Monsoon();
 		var smallUniverse = new SmallUniverse(app);
 		smallUniverse.addPage('/about', AboutPage);
-		smallUniverse.addPage('/', HelloPage);
+		smallUniverse.addPage('/:location?', HelloPage);
 		app.listen(3000);
 	}
 }

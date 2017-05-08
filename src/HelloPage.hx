@@ -10,7 +10,7 @@ import smalluniverse.SUMacro.jsx;
 #end
 using tink.CoreApi;
 
-class HelloPage extends UniversalPage<{name:String, age:Int}, {}, {}> {
+class HelloPage extends UniversalPage<{location:String}, {name:String, location:String, age:Int}, {}, {}> {
 
 	public function new() {
 		super();
@@ -18,17 +18,22 @@ class HelloPage extends UniversalPage<{name:String, age:Int}, {}, {}> {
 		this.head.setTitle('Hello!');
 	}
 
-	override function get():Promise<{name:String, age:Int}> {
+	override function get():Promise<{name:String, location:String, age:Int}> {
 		var json = File.getContent('props.json');
 		var props:{name:String, age:Int} = Json.parse(json);
-		return props;
+		var location = this.params.location;
+		return {
+			name: props.name,
+			age: props.age,
+			location: (location!=null) ? location : "the world"
+		};
 	}
 
 	override function render():UniversalElement {
 		return jsx('<div>
 			<h1 onClick=${clickHeader}>Hello ${this.props.name}</h1>
 			<h2 onClick=${clickHeader2}><em>How does it feel being <strong>${""+this.props.age}</strong> years old?</em></h2>
-			<p>Nice to meet you! <b>:)</b></p>
+			<p>Nice to meet you! <b>:)</b> - welcome to ${this.props.location}</p>
 			<input onKeyUp=${keyup} />
 		</div>');
 	}

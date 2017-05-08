@@ -16,14 +16,15 @@ class SmallUniverse {
 		this.app = monsoonApp;
 	}
 
-	public function addPage(route:String, pageToUse:LazyUniversalPage) {
-		app.use(route, function (req:Request, res:Response) {
+	public function addPage<T>(route:String, pageToUse:LazyUniversalPage<T>) {
+		app.use(route, function (req:Request<T>, res:Response) {
 			var page = pageToUse();
+			@:privateAccess page.params = req.params;
 			page.route(req, res);
 		});
 	}
 
-	static function getArgsFromBody(req:Request):Promise<Map<String,String>> {
+	static function getArgsFromBody<T>(req:Request<T>):Promise<Map<String,String>> {
 		switch req.body {
 			case Plain(source):
 				throw 'Expected multipart/form data';

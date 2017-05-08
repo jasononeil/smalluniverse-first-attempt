@@ -16,14 +16,14 @@ import smalluniverse.UniversalComponent;
 using tink.CoreApi;
 
 @:autoBuild(smalluniverse.SUPageBuilder.buildUniversalPage())
-class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TState, TRefs> {
+class UniversalPage<TParams, TProps, TState, TRefs> extends UniversalComponent<TProps, TState, TRefs> {
 
 	/**
-	The template to use for rendering basic page markup server side.
+		The template to use for rendering basic page markup server side.
 
-	The default should be sufficient for most use cases.
+		The default should be sufficient for most use cases.
 
-	Use `{BODY}`, `{HEAD}`, `{PAGE}` and `{PROPS}` literals as insertion points.
+		Use `{BODY}`, `{HEAD}`, `{PAGE}` and `{PROPS}` literals as insertion points.
 	**/
 	static var template:String = '<html>
 		<head>{HEAD}</head>
@@ -34,6 +34,17 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 	</html>';
 
 	public var head(default, null):UniversalPageHead;
+
+	/**
+		An object containing the route parameters from the current request.
+
+		This is set just before `route()` is called.
+
+		Please note this is currently only available on the server.
+	**/
+	#if server
+	public var params(default, null):TParams;
+	#end
 
 	public function new() {
 		// A page should not receive props through a constructor, but through it's get() method.
@@ -71,7 +82,7 @@ class UniversalPage<TProps, TState, TRefs> extends UniversalComponent<TProps, TS
 	/**
 		TODO
 	**/
-	public function route(req:Request, res:Response):Void {
+	public function route(req:Request<TParams>, res:Response):Void {
 		var action = req.query.get('small-universe-action');
 		res.error(404, 'Action '+action+' not found');
 	}

@@ -16,7 +16,7 @@ class SUPageBuilder {
 
 	static function getPropsTypeForClass(cb:ClassBuilder):ComplexType {
 		// Note: we are assuming we are extending UniversalPage<TProps,...>. Which may not be the case.
-		return cb.target.superClass.params[0].toComplex();
+		return cb.target.superClass.params[1].toComplex();
 	}
 
 	static function processGetMethod(cb:ClassBuilder):Void {
@@ -137,7 +137,7 @@ class SUPageBuilder {
 		});
 
 		// Add a default case that 404s, and combine it
-		var defaultCase = macro super.route(req, res);
+		var defaultCase = macro super.route(cast req, res);
 		var switchExpr = {
 			expr: ESwitch(macro action, actionCases, defaultCase),
 			pos: cb.target.pos
@@ -146,7 +146,7 @@ class SUPageBuilder {
 		// Create the method.
 		var routingMethod = (macro class Tmp {
 			@:access(smalluniverse.SmallUniverse)
-			override public function route(req:monsoon.Request, res:monsoon.Response) {
+			override public function route(req:monsoon.Request<{}>, res:monsoon.Response) {
 				var action = req.query.get('small-universe-action');
 				var isApiRequest = tink.CoreApi.OutcomeTools.isSuccess(req.header.byName('x-small-universe-api'));
 				$switchExpr;
