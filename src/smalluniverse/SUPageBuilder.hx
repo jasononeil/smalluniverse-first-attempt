@@ -27,15 +27,7 @@ class SUPageBuilder {
 					var fn = member.getFunction().sure();
 					fn.expr = macro {
 						return this.callServerApi('get').next(function (serializedProps:String) {
-							var props:$propsComplexType =
-								try {
-									tink.Json.parse(serializedProps);
-								} catch (e:Dynamic) {
-									trace('Error parsing properties: '+e);
-									js.Lib.rethrow();
-									null;
-								}
-							return props;
+							return this.props;
 						});
 					}
 				#end
@@ -60,15 +52,14 @@ class SUPageBuilder {
 				var formData = new js.html.FormData();
 				$b{setArgsInFormData};
 				return this.callServerApi($v{member.name}, formData).next(function (serializedResult:String) {
-					var result:$resultType =
-						try {
-							tink.Json.parse(serializedResult);
-						} catch (e:Dynamic) {
-							trace('Error parsing server action result: '+e);
-							js.Lib.rethrow();
-							null;
-						}
-					return result;
+					try {
+						var result:$resultType = tink.Json.parse(serializedResult);
+						return Success(result);
+					} catch (e:Dynamic) {
+						var err = tink.core.Error.withData('Error passing server action result', e);
+						trace(err.toString());
+						return Failure(err);
+					}
 				});
 			}
 			#end

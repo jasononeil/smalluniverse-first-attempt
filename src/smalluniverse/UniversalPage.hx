@@ -139,17 +139,29 @@ class UniversalPage<TParams, TProps, TState, TRefs> extends UniversalComponent<T
 			.ofJsPromise(window.fetch(request))
 			.asPromise()
 			.next(function (res:Response):Promise<String> {
-				return Future.ofJsPromise(res.text());
+				var responseText = Future.ofJsPromise(res.text());
+				if (res.status != 200) {
+					// The text() promise will succeed even if the response is not a 200.
+					// Take a Success() and map it to a Failure()
+					return responseText.map(function (outcome) return switch outcome {
+						case Success(txt):
+							var err = new Error(res.status, txt);
+							trace(err.toString());
+							Failure(err);
+						default: outcome;
+					});
+				};
+				return responseText;
 			})
 			.next(function (serializedResponse:String):Promise<String> {
-				var data:{props:Serialized<{}>, ?returnValue:Serialized<{}>} =
-					try {
-						tink.Json.parse(serializedResponse);
-					} catch (e:Dynamic) {
-						trace('Error: $e');
-						js.Lib.rethrow();
-						null;
-					}
+				var data:{props:Serialized<{}>, ?returnValue:Serialized<{}>};
+				try {
+					data = tink.Json.parse(serializedResponse);
+				} catch (e:Dynamic) {
+					var err = Error.withData('Failed to deserialize JSON', e);
+					trace(err.toString());
+					return Failure(err);
+				}
 				this.props = this.deserializeProps(data.props);
 				doClientRender();
 				var str:String = (action=='get') ? data.props : data.returnValue;
