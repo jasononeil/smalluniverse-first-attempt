@@ -128,6 +128,9 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 							}
 							var value = Reflect.field(props, field);
 							value = StringTools.htmlEscape(value);
+							if (field == 'className') {
+								field = 'class';
+							}
 							attrsHtml += ' $field="$value"';
 						}
 					}
