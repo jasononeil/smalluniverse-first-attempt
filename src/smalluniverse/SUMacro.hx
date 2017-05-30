@@ -100,7 +100,9 @@ class SUMacro {
 
 				// We actually set the children property in SUServerSideNode.createNodeForComponent.
 				// But we need to fake it here so ReactMacro knows it is provided.
-				attrs.push({field:'children', expr:macro ($a{children}:Array<smalluniverse.SUServerSideComponent.SUServerSideNode>)});
+				if (children.length > 0) {
+					attrs.push({field:'children', expr:macro ($a{children}:Array<smalluniverse.SUServerSideComponent.SUServerSideNode>)});
+				}
                 var props = ReactMacro.makeProps(spread, attrs, pos);
 
                 if (isHtml) {
