@@ -10,7 +10,12 @@ import smalluniverse.SUMacro.jsx;
 #end
 using tink.CoreApi;
 
-class HelloPage extends UniversalPage<{location:String}, {name:String, location:String, age:Int}, {}, {}> {
+enum HelloActions {
+	GetOlder;
+	ChangeName(newName:String);
+}
+
+class HelloPage extends UniversalPage<HelloActions, {location:String}, {name:String, location:String, age:Int}, {}, {}> {
 
 	public function new() {
 		super();

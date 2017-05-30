@@ -18,20 +18,20 @@ For example, with [dodrugs](https://github.com/jasononeil/dodrugs) you could use
 	var lazyPage:LazyUniversalPage = function () return injector.get(SignupPage);
 **/
 @:callable
-abstract LazyUniversalPage<T>(Void->UniversalPage<T,Dynamic,Dynamic,Dynamic>) {
+abstract LazyUniversalPage(Void->UniversalPage<Dynamic,Dynamic,Dynamic,Dynamic,Dynamic>) {
 	function new(fn) {
 		this = fn;
 	}
 
-	@:from public static function fromClass<T:UniversalPage<Dynamic,Dynamic,Dynamic,Dynamic>>(cls:Class<T>) {
+	@:from public static function fromClass<T:UniversalPage<Dynamic,Dynamic,Dynamic,Dynamic,Dynamic>>(cls:Class<T>) {
 		return new LazyUniversalPage(function () return Type.createInstance(cls, []));
 	}
 
-	@:from public static function fromPage<T>(page:UniversalPage<T,Dynamic,Dynamic,Dynamic>) {
+	@:from public static function fromPage<T>(page:UniversalPage<Dynamic,Dynamic,Dynamic,Dynamic,Dynamic>) {
 		return new LazyUniversalPage(function () return page);
 	}
 
-	@:from public static function fromFn<T>(getPage:Void->UniversalPage<T,Dynamic,Dynamic,Dynamic>) {
+	@:from public static function fromFn<T>(getPage:Void->UniversalPage<Dynamic,Dynamic,Dynamic,Dynamic,Dynamic>) {
 		return new LazyUniversalPage(getPage);
 	}
 }

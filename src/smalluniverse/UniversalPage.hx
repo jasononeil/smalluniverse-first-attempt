@@ -16,7 +16,7 @@ import smalluniverse.UniversalComponent;
 using tink.CoreApi;
 
 @:autoBuild(smalluniverse.SUPageBuilder.buildUniversalPage())
-class UniversalPage<TParams, TProps, TState, TRefs> extends UniversalComponent<TProps, TState, TRefs> {
+class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalComponent<TProps, TState, TRefs> {
 
 	/**
 		The template to use for rendering basic page markup server side.

@@ -16,7 +16,7 @@ class SmallUniverse {
 		this.app = monsoonApp;
 	}
 
-	public function addPage<T>(route:String, pageToUse:LazyUniversalPage<T>) {
+	public function addPage<T>(route:String, pageToUse:LazyUniversalPage) {
 		app.use(route, function (req:Request<T>, res:Response) {
 			var page = pageToUse();
 			@:privateAccess page.params = req.params;

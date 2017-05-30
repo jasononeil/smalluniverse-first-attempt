@@ -15,8 +15,8 @@ class SUPageBuilder {
 	}
 
 	static function getPropsTypeForClass(cb:ClassBuilder):ComplexType {
-		// Note: we are assuming we are extending UniversalPage<TProps,...>. Which may not be the case.
-		return cb.target.superClass.params[1].toComplex();
+		// Note: we are assuming we are extending UniversalPage<TAction, TParams, TProps, TState, TRef>. Which may not be the case.
+		return cb.target.superClass.params[2].toComplex();
 	}
 
 	static function processGetMethod(cb:ClassBuilder):Void {
