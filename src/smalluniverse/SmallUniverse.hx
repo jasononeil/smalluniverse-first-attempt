@@ -14,6 +14,7 @@ class SmallUniverse {
 
 	public function new(monsoonApp:Monsoon) {
 		this.app = monsoonApp;
+		monsoonApp.use(new SULogMiddleware());
 	}
 
 	public function addPage<T>(route:String, pageToUse:LazyUniversalPage) {
