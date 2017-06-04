@@ -3,16 +3,17 @@ package smalluniverse;
 #if client
 	import react.ReactDOM;
 	import react.React;
-	import tink.json.Serialized;
 	import js.html.FormData;
 	import js.Browser.window;
 	import js.Browser.document;
+	import js.Browser.console;
 	import js.html.*;
 #elseif server
 	import monsoon.Request;
 	import monsoon.Response;
 #end
 import smalluniverse.UniversalComponent;
+import tink.Json;
 using tink.CoreApi;
 
 @:autoBuild(smalluniverse.SUPageBuilder.buildUniversalPage())
@@ -35,6 +36,12 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 
 	public var head(default, null):UniversalPageHead;
 
+	#if server
+	/**
+	TODO
+	**/
+	public var backendApi:BackendApi<TAction, TParams, TProps>;
+
 	/**
 		An object containing the route parameters from the current request.
 
@@ -42,25 +49,28 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 
 		Please note this is currently only available on the server.
 	**/
-	#if server
 	public var params(default, null):TParams;
 	#end
 
-	public function new() {
+	public function new(backendApi) {
 		// A page should not receive props through a constructor, but through it's get() method.
 		super();
 		this.head = new UniversalPageHead();
+		#if server
+			this.backendApi = backendApi;
+		#end
 	}
 	/**
 		Retrieve the properties for this page.
 
-		This will be executed server-side, and should return a `tink.core.Promise`.
-		Note: if you don't need asynchronous loading, returning the props synchronously will work thanks to the `Promise.ofData()` automatic cast.
-
-		If a page does not implement its own get method, then a Promise containing a null value will be returned, representing that there are no props to display.
+		TODO: explain how this links with backend API.
 	**/
 	public function get():Promise<TProps> {
-		return Future.sync(Success(null));
+		#if server
+			return this.backendApi.get(this.params);
+		#elseif client
+			return this.callServerAction(None);
+		#end
 	}
 
 	#if server
@@ -83,8 +93,85 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 		TODO
 	**/
 	public function route(req:Request<TParams>, res:Response):Void {
-		var action = req.query.get('small-universe-action');
-		res.error(404, 'Action '+action+' not found');
+		var isApiRequest = req.header.byName('x-small-universe-api').isSuccess();
+		var contentType = isApiRequest ? 'application/json' : 'text/html';
+		res.set('content-type', contentType);
+
+		var propsPromise = switch req.method {
+			case GET:
+				this.backendApi.get(req.params);
+			case POST:
+				// Execute the action, then fetch the props.
+				getBodyString(req)
+					.next(function (json) return deserializeAction(json))
+					.next(function (action) return this.backendApi.processAction(req.params, action))
+					.next(function (_) return this.backendApi.get(req.params));
+			case _:
+				var err = new Error('Expected method to be GET or POST, was' + req.method);
+				Future.sync(Failure(err));
+		}
+
+		propsPromise.handle(function (outcome) {
+			switch outcome {
+				case Success(props):
+					res.status(200);
+					if (isApiRequest) {
+						var json = serializeProps(props);
+						res.send(json);
+					} else {
+						renderFullHtml(res, props);
+					}
+				case Failure(err):
+					res.status(err.code);
+					if (isApiRequest) {
+						// TODO: get tink_json to serialize an Error directly.
+						var errorSummary = {
+							code: (err.code:Int),
+							message: err.message,
+						};
+						var json = Json.stringify(errorSummary);
+						res.send(json);
+					} else {
+						// TODO: have a way to set a custom error handler.
+						var html = '<pre>${err.toString()}</pre>';
+						res.send(html);
+					}
+			}
+		});
+	}
+
+	function renderFullHtml(res:Response, props:TProps) {
+		this.props = props;
+		var appHtml = this.render().renderToString();
+		var propsJson = serializeProps(props);
+		var pageName = Type.getClassName(Type.getClass(this));
+		var head = this.head.renderToString();
+		var html = smalluniverse.UniversalPage.template;
+		html = StringTools.replace(html, '{BODY}', appHtml);
+		html = StringTools.replace(html, '{HEAD}', head);
+		html = StringTools.replace(html, '{PAGE}', pageName);
+		html = StringTools.replace(html, '{PROPS}', propsJson);
+		res.send(html);
+	}
+
+	static function getBodyString<T>(req:Request<T>):Promise<String> {
+		switch req.body {
+			case Plain(source):
+				return source.all().asPromise().next(function (bytes) return bytes.toString());
+			case Parsed(structuredBody):
+				for (part in structuredBody) {
+					switch part.value {
+						case Value(val):
+							if (part.name == 'action') {
+								return val;
+							}
+							// TODO: decide if there's any reason to check for other values.
+						case File(handle):
+							// TODO: decide if we want to handle file uploads here.
+					}
+				}
+				return new Error('Expected response body to either be JSON, or have an `action` parameter containing the JSON.');
+		}
 	}
 	#end
 
@@ -92,7 +179,27 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 		return throw 'Assert: should be implemented by macro';
 	}
 
+	function serializeProps(props:TProps):String {
+		return throw 'Assert: should be implemented by macro';
+	}
+
+	function deserializeAction(json:String):TAction {
+		return throw 'Assert: should be implemented by macro';
+	}
+
+	function serializeAction(action:TAction):String {
+		return throw 'Assert: should be implemented by macro';
+	}
+
+
 	#if client
+	/**
+		TODO:
+	**/
+	public function trigger(action:TAction):Promise<TProps> {
+		return callServerAction(Some(action));
+	}
+
 	/**
 		TODO:
 	**/
@@ -120,20 +227,24 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 	/**
 		TODO
 	**/
-	function callServerApi(action:String, ?formData:FormData):Promise<String> {
-		if (formData == null) {
-			formData = new FormData();
-		}
-		var l = window.location;
-		var query = (l.search != "") ? '${l.search}&' : '?';
-		var url = l.protocol + '//' + l.host + l.pathname + query + 'small-universe-action=$action';
-		var request = new Request(url, {
-			method: 'POST',
-			headers: new Headers({
-				'x-small-universe-api': '1'
-			}),
-			body: formData
-		});
+	function callServerAction(action:Option<TAction>):Promise<TProps> {
+		var request = switch action {
+			case Some(a):
+				new Request(window.location.href, {
+					method: 'POST',
+					headers: new Headers({
+						'x-small-universe-api': '1'
+					}),
+					body: serializeAction(a)
+				});
+			case None:
+				new Request(window.location.href, {
+					method: 'GET',
+					headers: new Headers({
+						'x-small-universe-api': '1'
+					})
+				});
+		};
 
 		return Future
 			.ofJsPromise(window.fetch(request))
@@ -145,8 +256,14 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 					// Take a Success() and map it to a Failure()
 					return responseText.map(function (outcome) return switch outcome {
 						case Success(txt):
-							var err = new Error(res.status, txt);
-							trace(err.toString());
+							var err;
+							try {
+								var errDetails:{code:Int, message:String} = Json.parse(txt);
+								err = new Error(errDetails.code, errDetails.message);
+							} catch (e:Dynamic) {
+								// If the message wasn't a JSON response with the error, just use the message and HTTP code for the new error.
+								err = new Error(res.status, txt);
+							}
 							Failure(err);
 						default: outcome;
 					});
@@ -154,18 +271,28 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 				return responseText;
 			})
 			.next(function (serializedResponse:String):Promise<String> {
-				var data:{props:Serialized<{}>, ?returnValue:Serialized<{}>};
 				try {
-					data = tink.Json.parse(serializedResponse);
+					var response:{
+						__smallUniverse:{
+							messages:Array<Array<String>>
+						}
+					} = tink.Json.parse(serializedResponse);
+					for (messageValues in response.__smallUniverse.messages) {
+						var console = js.Browser.console,
+							log = console.log,
+							args:Array<Dynamic> = [for (arg in messageValues) haxe.Json.parse(arg)];
+						untyped log.apply(console, args);
+					}
 				} catch (e:Dynamic) {
-					var err = Error.withData('Failed to deserialize JSON', e);
-					trace(err.toString());
-					return Failure(err);
+					// Ignore errors.
+					console.log('Error reading log messages: ', e);
 				}
-				this.props = this.deserializeProps(data.props);
+				return serializedResponse;
+			})
+			.next(function (serializedResponse:String):Promise<TProps> {
+				this.props = this.deserializeProps(serializedResponse);
 				doClientRender();
-				var str:String = (action=='get') ? data.props : data.returnValue;
-				return str;
+				return this.props;
 			});
 	}
 	#end

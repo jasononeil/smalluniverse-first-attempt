@@ -23,22 +23,4 @@ class SmallUniverse {
 			page.route(req, res);
 		});
 	}
-
-	static function getArgsFromBody<T>(req:Request<T>):Promise<Map<String,String>> {
-		switch req.body {
-			case Plain(source):
-				throw 'Expected multipart/form data';
-			case Parsed(structuredBody):
-				var params = new Map();
-				for (part in structuredBody) {
-					switch part.value {
-						case Value(v):
-							params[part.name] = v;
-  						case File(handle):
-						  	// TODO
-					}
-				}
-				return params;
-		}
-	}
 }

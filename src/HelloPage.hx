@@ -15,23 +15,16 @@ enum HelloActions {
 	ChangeName(newName:String);
 }
 
-class HelloPage extends UniversalPage<HelloActions, {location:String}, {name:String, location:String, age:Int}, {}, {}> {
+typedef HelloParams = {location:String};
+
+typedef HelloProps = {name:String, location:String, age:Int};
+
+class HelloPage extends UniversalPage<HelloActions, HelloParams, HelloProps, {}, {}> {
 
 	public function new() {
-		super();
+		super(new HelloBackendApi());
 		this.head.addScript('react-test.bundle.js');
 		this.head.setTitle('Hello!');
-	}
-
-	override function get():Promise<{name:String, location:String, age:Int}> {
-		var json = File.getContent('props.json');
-		var props:{name:String, age:Int} = Json.parse(json);
-		var location = this.params.location;
-		return {
-			name: props.name,
-			age: props.age,
-			location: (location!=null) ? location : "the world"
-		};
 	}
 
 	override function render():UniversalElement {
@@ -43,29 +36,11 @@ class HelloPage extends UniversalPage<HelloActions, {location:String}, {name:Str
 		</div>');
 	}
 
-	@:serverAction public function addExplanationMark():Promise<String> {
-		var json = File.getContent('props.json');
-		var props:{name:String, age:Int} = Json.parse(json);
-		props.age++;
-		json = Json.stringify(props);
-		File.saveContent('props.json', json);
-		return Sys.getCwd();
-	}
-
-	@:serverAction public function changeName(name:String):Promise<Noise> {
-		var json = File.getContent('props.json');
-		var props:{name:String, age:Int} = Json.parse(json);
-		props.name = name;
-		json = Json.stringify(props);
-		File.saveContent('props.json', json);
-		return Noise;
-	}
-
 	@:client
 	function clickHeader() {
-		addExplanationMark().handle(function (outcome:Outcome<String,Error>) {
-			var path = outcome.sure();
-			Browser.alert('Executed at $path');
+		trigger(GetOlder).handle(function (outcome:Outcome<HelloProps,Error>) {
+			var props = outcome.sure();
+			Browser.alert('Successfully made you older, you are now ${props.age} years old');
 		});
 	}
 
@@ -80,6 +55,6 @@ class HelloPage extends UniversalPage<HelloActions, {location:String}, {name:Str
 	@:client
 	function keyup(e:react.ReactEvent) {
 		var target = cast (e.target, InputElement);
-		changeName(target.value);
+		trigger(ChangeName(target.value));
 	}
 }
