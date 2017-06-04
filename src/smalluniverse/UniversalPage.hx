@@ -16,7 +16,7 @@ import smalluniverse.UniversalComponent;
 import tink.Json;
 using tink.CoreApi;
 
-@:autoBuild(smalluniverse.SUPageBuilder.buildUniversalPage())
+@:autoBuild(smalluniverse.SUBuildMacro.buildUniversalPage())
 class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalComponent<TProps, TState, TRefs> {
 
 	/**
@@ -284,8 +284,7 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 						untyped log.apply(console, args);
 					}
 				} catch (e:Dynamic) {
-					// Ignore errors.
-					console.log('Error reading log messages: ', e);
+					// Ignore errors - they're probably just complaining if the field was missing.
 				}
 				return serializedResponse;
 			})

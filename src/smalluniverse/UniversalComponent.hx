@@ -11,7 +11,7 @@ typedef UniversalFunctionalComponent<TProps> = TProps->UniversalElement;
 /**
 	Components in Small Universe should extend this class.
 **/
-@:autoBuild(smalluniverse.SUComponentBuilder.buildUniversalComponent())
+@:autoBuild(smalluniverse.SUBuildMacro.buildUniversalComponent())
 class UniversalComponent<TProps, TState, TRefs> extends UniversalComponentBaseType<TProps, TState, TRefs> {
 
 }
