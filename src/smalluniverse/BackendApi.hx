@@ -16,6 +16,7 @@ For example it might create a new database record in response to an action, or c
 All of your "read" operations should happen in `get()`.
 All of your "write" operations should happen in `processAction()`.
 **/
+@:autoBuild(smalluniverse.SUBuildMacro.buildBackendApi())
 interface BackendApi<TAction, TParams, TProps> {
 	/**
 	Load the current props for a page.

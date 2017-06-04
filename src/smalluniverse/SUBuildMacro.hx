@@ -21,30 +21,54 @@ class SUBuildMacro {
 		]);
 	}
 
+	public static function buildBackendApi():Array<Field> {
+		return ClassBuilder.run([
+			#if client
+				emptyMethodBodies
+			#end
+		]);
+	}
+
+	static function emptyMethodBodies(cb:ClassBuilder):Void {
+		for (member in cb) {
+			emptyField(member, false);
+		}
+	}
+
 	static function removePlatformSpecificMethods(metaName:String, cb:ClassBuilder):Void {
 		for (member in cb) {
 			// Empty fields with `@:client` metadata.
 			switch member.extractMeta(metaName) {
-				case Success(_): emptyField(member);
+				case Success(_): emptyField(member, true);
 				default:
 			}
 		}
 	}
 
-	static function emptyField(member:Member):Void {
+	static function emptyField(member:Member, changeSignature:Bool):Void {
 		switch member.kind {
 			// Leave the function or variable in place so it exists in case there is a reference to it.
 			// But make all types "Any", and make the expression empty, so it won't cause compile time issues.
 			case FFun(f):
-				for (arg in f.args) {
-					arg.type = macro :Any;
+				if (changeSignature) {
+					for (arg in f.args) {
+						arg.type = macro :Any;
+					}
+					f.ret = macro :Any;
 				}
-				f.ret = macro :Any;
 				f.expr = macro return null;
 			case FVar(t, e):
-				member.kind = FVar(macro :Any, macro null);
+				if (changeSignature) {
+					member.kind = FVar(macro :Any, macro null);
+				} else {
+					member.kind = FVar(t, macro null);
+				}
 			case FProp(get, set, t, e):
-				member.kind = FProp(get, set, macro :Any, macro null);
+				if (changeSignature) {
+					member.kind = FProp(get, set, macro :Any, macro null);
+				} else {
+					member.kind = FProp(get, set, t, macro null);
+				}
 		}
 	}
 

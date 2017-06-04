@@ -8,12 +8,10 @@ using tink.CoreApi;
 /**
 TODO: document.
 **/
-// TODO: use build macro to allow this to compile client side.
 class HelloBackendApi implements smalluniverse.BackendApi<HelloActions, HelloParams, HelloProps> {
 	public function new() {}
 
 	public function get(params:HelloParams):Promise<HelloProps> {
-		#if server
 		var json = File.getContent('props.json');
 		var props:{name:String, age:Int} = Json.parse(json);
 		var location = params.location;
@@ -22,13 +20,9 @@ class HelloBackendApi implements smalluniverse.BackendApi<HelloActions, HelloPar
 			age: props.age,
 			location: (location!=null) ? location : "the world"
 		};
-		#else
-		return throw 'need to make this skip compilation on client';
-		#end
 	}
 
 	public function processAction(params:HelloParams, action:HelloActions):Promise<Noise> {
-		#if server
 		var json = File.getContent('props.json');
 		var props:{name:String, age:Int} = Json.parse(json);
 		switch action {
@@ -40,8 +34,5 @@ class HelloBackendApi implements smalluniverse.BackendApi<HelloActions, HelloPar
 		json = Json.stringify(props);
 		File.saveContent('props.json', json);
 		return Noise;
-		#else
-		return throw 'need to make this skip compilation on client';
-		#end
 	}
 }
