@@ -95,7 +95,7 @@ class SUBuildMacro {
 		var serializeName = 'serialize' + name;
 		var deserializeName = 'deserialize' + name;
 		var newMethods = (macro class Tmp {
-			override public function $serializeName(value:$targetType):String {
+			override public function $serializeName(value:$targetType):String @:pos(cb.target.pos) {
 				return try {
 					tink.Json.stringify(value);
 				} catch (e:Dynamic) {
@@ -108,7 +108,7 @@ class SUBuildMacro {
 					null;
 				}
 			}
-			override public function $deserializeName(json:String):$targetType {
+			override public function $deserializeName(json:String):$targetType @:pos(cb.target.pos) {
 				return try {
 					tink.Json.parse(json);
 				} catch (e:Dynamic) {
