@@ -24,9 +24,20 @@ class SUBuildMacro {
 	public static function buildBackendApi():Array<Field> {
 		return ClassBuilder.run([
 			#if client
+				emptyAllMethodsExcept(['get', 'processAction']),
 				emptyMethodBodies
 			#end
 		]);
+	}
+
+	static function emptyAllMethodsExcept(methodsToKeep:Array<String>):ClassBuilder->Void {
+		return function (cb:ClassBuilder) {
+			for (member in cb) {
+				if (methodsToKeep.indexOf(member.name) == -1) {
+					cb.removeMember(member);
+				}
+			}
+		};
 	}
 
 	static function emptyMethodBodies(cb:ClassBuilder):Void {
