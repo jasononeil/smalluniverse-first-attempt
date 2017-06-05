@@ -52,7 +52,7 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 	public var params(default, null):TParams;
 	#end
 
-	public function new(backendApi) {
+	public function new(backendApi:BackendApi<TAction, TParams, TProps>) {
 		// A page should not receive props through a constructor, but through it's get() method.
 		super();
 		this.head = new UniversalPageHead();
