@@ -1,13 +1,17 @@
 var path = require('path');
 
 module.exports = {
-    entry: './www/react-test.haxe.js',
+    entry: './client.hxml',
     output: {
         path: __dirname + "/www",
         filename: 'react-test.bundle.js'
     },
     module: {
         rules: [
+            {
+                test: /\.hxml$/,
+                loader: './hxml.loader.js',
+            },
             {
                 test: /\.js$/,
                 loader: 'babel-loader',

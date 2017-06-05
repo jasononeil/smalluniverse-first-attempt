@@ -3,5 +3,6 @@
         ["client.hxml"],
         ["server.hxml"]
     ],
-    "editor.insertSpaces": false
+	"editor.insertSpaces": false,
+	"eslint.enable": false
 }

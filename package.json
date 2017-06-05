@@ -20,6 +20,8 @@
     "css-loader": "^0.26.1",
     "less": "^2.7.2",
     "less-loader": "^2.2.3",
+    "loader-utils": "^1.1.0",
+    "prettier": "^1.4.2",
     "style-loader": "^0.13.1",
     "webpack": "^2.2.1"
   }
