@@ -4,6 +4,7 @@
   "author": "Jason O'Neil <jason.oneil@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "start": "webpack-dev-server --open",
     "webpack": "node node_modules/webpack/bin/webpack.js",
     "watch": "node node_modules/webpack/bin/webpack.js --watch"
   },
@@ -23,6 +24,7 @@
     "loader-utils": "^1.1.0",
     "prettier": "^1.4.2",
     "style-loader": "^0.13.1",
-    "webpack": "^2.2.1"
+    "webpack": "^2.2.1",
+    "webpack-dev-server": "^2.4.5"
   }
 }

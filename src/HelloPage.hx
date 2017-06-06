@@ -23,7 +23,7 @@ class HelloPage extends UniversalPage<HelloActions, HelloParams, HelloProps, {},
 
 	public function new() {
 		super(new HelloBackendApi());
-		this.head.addScript('react-test.bundle.js');
+		this.head.addScript('js/react-test.bundle.js');
 		this.head.setTitle('Hello!');
 	}
 
