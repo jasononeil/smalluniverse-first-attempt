@@ -1,10 +1,11 @@
 # 3rd party libraries
 node_modules
 .haxelib
+yarn-error.log
 
 # Compiled files
 www/lib
 www/res
 www/index.php
+www/js
 www/react-test.haxe.js
-www/react-test.bundle.js

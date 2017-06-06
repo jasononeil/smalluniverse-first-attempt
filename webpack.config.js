@@ -10,15 +10,7 @@ module.exports = {
         rules: [
             {
                 test: /\.hxml$/,
-                loader: './hxml.loader.js',
-            },
-            {
-                test: /\.js$/,
-                loader: 'babel-loader',
-                exclude: [path.resolve(__dirname, "node_modules")],
-                options: {
-                    presets: ['react', 'es2015']
-                }
+                loader: 'haxe-loader',
             },
             {
                 test: /\.less$/,
@@ -31,7 +23,7 @@ module.exports = {
         ]
     },
     devServer: {
-        contentBase: path.join(__dirname, "./www"),
+        contentBase: "./www",
         overlay: true,
         proxy: {
             "/": {
