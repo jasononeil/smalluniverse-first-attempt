@@ -145,11 +145,13 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 				if (isRootNode) {
 					openingTag += ' data-reactroot=""';
 				}
+				var selfClosingTags = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+				var selfClosingTag = (selfClosingTags.indexOf(tag) > -1) ? '/>' : '></$tag>';
 				var html =
 					openingTag
 					 + attrsHtml
 					 + ' data-reactid="${idOfCurrentNode}"'
-					 + ((childrenHtml != "") ? ">" : "/>")
+					 + ((childrenHtml != "") ? ">" : selfClosingTag)
 					 + childrenHtml
 					 + ((childrenHtml != "") ? '</${tag}>' : '');
 				if (isRootNode) {
