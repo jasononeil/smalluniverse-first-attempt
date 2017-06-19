@@ -39,7 +39,13 @@ class SULogMiddleware {
 					var body = b.toString();
 					var script = '\n<script>';
 					for (log in logs) {
-						var args = log.map(function (arg) return 'JSON.parse(\'$arg\')').join(", ");
+						var args = log.map(function (arg) {
+							// When parsing this to the browser, the `\` escaping is meant for the JSON parser, not the JS parser.
+							// Which means we have to double escape, replacing `\"` with `\\"`.
+							var backslash = '\\';
+							var escapedArg = StringTools.replace(arg, backslash, backslash+backslash);
+							return 'JSON.parse(\'$escapedArg\')';
+						}).join(", ");
 						script += '\nconsole.log($args);';
 					}
 					script += '\n</script>';
