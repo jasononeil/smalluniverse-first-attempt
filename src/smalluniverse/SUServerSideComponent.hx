@@ -142,24 +142,28 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 				}
 
 				openingTag = '<$tag';
-				if (isRootNode) {
-					openingTag += ' data-reactroot=""';
-				}
+				var reactRootTag = isRootNode ? ' data-reactroot=""' : '';
 				var selfClosingTags = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 				var selfClosingTag = (selfClosingTags.indexOf(tag) > -1) ? '/>' : '></$tag>';
 				var html =
 					openingTag
 					 + attrsHtml
+					 + reactRootTag
 					 + ' data-reactid="${idOfCurrentNode}"'
 					 + ((childrenHtml != "") ? ">" : selfClosingTag)
 					 + childrenHtml
 					 + ((childrenHtml != "") ? '</${tag}>' : '');
 				if (isRootNode) {
-					// We need a checksum of the full tree, then we
-					var checksum = Adler32.make(Bytes.ofString(html));
-					// Immediately after the opening tag insert the checksum.
-					var posToInsert = '<$tag'.length;
-					html = html.substr(0, posToInsert) + ' data-react-checksum="$checksum"' + html.substr(posToInsert);
+					var checksum:Float = Adler32.make(Bytes.ofString(html));
+					if (checksum > Math.pow(2, 16)) {
+						// Make sure the checksum is in the Int32 range (-2^16 through to +2^16).
+						// Even though Adler32 returns an Int, PHP is allowing it's value to exceed this.
+						// TODO: file a bug report and pull request so haxe.Adler32 works with Int32s.
+						checksum = checksum - Math.pow(2, 32);
+					}
+					// Insert the checksum at the end of the opening element.
+					var TAG_END = ~/( ?\/?>)/;
+					html = TAG_END.replace(html,  ' data-react-checksum="$checksum"$1');
 				}
 				return html;
 			case Component(component, props, children):
