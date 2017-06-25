@@ -66,7 +66,6 @@ class SULogMiddleware {
 					if (!Reflect.hasField(responseData.__smallUniverse, 'messages')) {
 						Reflect.setField(responseData.__smallUniverse, 'messages', logs);
 					}
-					responseData.__smallUniverse.messages = logs;
 					res.clear();
 					res.json(responseData);
 					return res;
