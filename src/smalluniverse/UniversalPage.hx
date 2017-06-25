@@ -69,7 +69,7 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 		#if server
 			return this.backendApi.get(this.params);
 		#elseif client
-			return this.callServerAction(None);
+			return this.callServerAction(None).next(function (_) return this.props);
 		#end
 	}
 
@@ -97,15 +97,18 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 		var contentType = isApiRequest ? 'application/json' : 'text/html';
 		res.set('content-type', contentType);
 
-		var propsPromise = switch req.method {
+		var propsPromise:Promise<Either<TProps,String>> = switch req.method {
 			case GET:
-				this.backendApi.get(req.params);
+				this.backendApi.get(req.params).next(function (p) return Left(p));
 			case POST:
 				// Execute the action, then fetch the props.
 				getBodyString(req)
 					.next(function (json) return deserializeAction(json))
 					.next(function (action) return this.backendApi.processAction(req.params, action))
-					.next(function (_) return this.backendApi.get(req.params));
+					.next(function (result) return switch result {
+						case Done: this.backendApi.get(req.params).next(function (p) return Left(p));
+						case Redirect(url): Right(url);
+					});
 			case _:
 				var err = new Error('Expected method to be GET or POST, was' + req.method);
 				Future.sync(Failure(err));
@@ -113,13 +116,25 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 
 		propsPromise.handle(function (outcome) {
 			switch outcome {
-				case Success(props):
+				case Success(Left(props)):
 					res.status(200);
 					if (isApiRequest) {
 						var json = serializeProps(props);
 						res.send(json);
 					} else {
 						renderFullHtml(res, props);
+					}
+				case Success(Right(url)):
+					if (isApiRequest) {
+						res.status(200);
+						var json = Json.stringify({
+							__smallUniverse: {
+								redirect: url
+							}
+						});
+						res.send(json);
+					} else {
+						res.redirect(url);
 					}
 				case Failure(err):
 					res.status(err.code);
@@ -196,7 +211,7 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 	/**
 		TODO:
 	**/
-	public function trigger(action:TAction):Promise<TProps> {
+	public function trigger(action:TAction):Promise<Noise> {
 		return callServerAction(Some(action));
 	}
 
@@ -227,7 +242,7 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 	/**
 		TODO
 	**/
-	function callServerAction(action:Option<TAction>):Promise<TProps> {
+	function callServerAction(action:Option<TAction>):Promise<Noise> {
 		var request = switch action {
 			case Some(a):
 				new Request(window.location.href, {
@@ -270,10 +285,11 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 				};
 				return responseText;
 			})
-			.next(function (serializedResponse:String):Promise<String> {
+			.next(function (serializedResponse:String):Promise<Option<String>> {
 				try {
 					var response:{
 						__smallUniverse:{
+							redirect:Null<String>,
 							messages:Array<Array<String>>
 						}
 					} = tink.Json.parse(serializedResponse);
@@ -283,15 +299,26 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 							args:Array<Dynamic> = [for (arg in messageValues) haxe.Json.parse(arg)];
 						untyped log.apply(console, args);
 					}
+					if (response.__smallUniverse.redirect != null) {
+						js.Browser.window.location.assign(response.__smallUniverse.redirect);
+						// Fulfill the promise, but do not execute a render.
+						return None;
+						// reject the promise?
+					}
 				} catch (e:Dynamic) {
 					// Ignore errors - they're probably just complaining if the field was missing.
 				}
-				return serializedResponse;
+				return Some(serializedResponse);
 			})
-			.next(function (serializedResponse:String):Promise<TProps> {
-				this.props = this.deserializeProps(serializedResponse);
-				doClientRender();
-				return this.props;
+			.next(function (responseToRender:Option<String>):Promise<Noise> {
+				switch responseToRender {
+					case Some(serializedResponse):
+						this.props = this.deserializeProps(serializedResponse);
+						doClientRender();
+						return Noise;
+					case None:
+						return Noise;
+				}
 			});
 	}
 	#end

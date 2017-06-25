@@ -3,6 +3,7 @@ import sys.io.File;
 #end
 import tink.Json;
 import HelloPage;
+import smalluniverse.BackendApi;
 using tink.CoreApi;
 
 /**
@@ -22,7 +23,7 @@ class HelloBackendApi implements smalluniverse.BackendApi<HelloActions, HelloPar
 		};
 	}
 
-	public function processAction(params:HelloParams, action:HelloActions):Promise<Noise> {
+	public function processAction(params:HelloParams, action:HelloActions):Promise<BackendApiResult> {
 		var json = File.getContent('props.json');
 		var props:{name:String, age:Int} = Json.parse(json);
 		switch action {
@@ -33,6 +34,6 @@ class HelloBackendApi implements smalluniverse.BackendApi<HelloActions, HelloPar
 		}
 		json = Json.stringify(props);
 		File.saveContent('props.json', json);
-		return Noise;
+		return Done;
 	}
 }

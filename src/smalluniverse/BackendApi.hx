@@ -2,6 +2,11 @@ package smalluniverse;
 
 import tink.CoreApi;
 
+enum BackendApiResult {
+	Done;
+	Redirect(url:String);
+}
+
 /**
 A backend Api allows you to wire your page up to a backend server.
 
@@ -38,5 +43,5 @@ interface BackendApi<TAction, TParams, TProps> {
 	After actions have been processed by the server, a new `get()` call will be made and will return updated properties to the client.
 	This allows each `processAction` call to focus purely on applying the changes, and not worry about fetching and mutating state objects to be rendered.
 	**/
-	public function processAction(params:TParams, action:TAction):Promise<Noise>;
+	public function processAction(params:TParams, action:TAction):Promise<BackendApiResult>;
 }
