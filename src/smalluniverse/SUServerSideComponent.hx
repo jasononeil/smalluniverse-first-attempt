@@ -114,7 +114,8 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 					idOfCurrentNode = startingId.value,
 					openingTag = "",
 					attrsHtml = "",
-					childrenHtml = "";
+					childrenHtml = "",
+					dangerousInnerHtml:String = null;
 
 				if (props) {
 					var fields = Reflect.fields(props);
@@ -126,6 +127,11 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 								continue;
 							}
 							var value = Reflect.field(props, field);
+							if (field == 'dangerouslySetInnerHTML') {
+								var data:Dynamic = value;
+								dangerousInnerHtml = (data != null) ? data.__html : null;
+								continue;
+							}
 							value = StringTools.htmlEscape(value);
 							if (field == 'className') {
 								field = 'class';
@@ -135,7 +141,9 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 					}
 				}
 
-				if (children != null) {
+				if (dangerousInnerHtml != null) {
+					childrenHtml = dangerousInnerHtml;
+				} else if (children != null) {
 					for (child in children) {
 						childrenHtml += child.renderToString(startingId, children.length == 1);
 					}
