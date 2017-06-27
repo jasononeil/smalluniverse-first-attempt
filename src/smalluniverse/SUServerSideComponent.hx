@@ -120,17 +120,33 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 				if (props) {
 					var fields = Reflect.fields(props);
 					if (fields.length > 0) {
-						var ignoredFields = ['children', 'onCopy', 'onCut', 'onPaste', 'onCompositionEnd', 'onCompositionStart', 'onCompositionUpdate', 'onKeyDown', 'onKeyPress', 'onKeyUp', 'onFocus', 'onBlur', 'onChange', 'onInput', 'onSubmit', 'onClick', 'onContextMenu', 'onDoubleClick', 'onDrag', 'onDragEnd', 'onDragEnter', 'onDragExit', 'onDragLeave', 'onDragOver', 'onDragStart', 'onDrop', 'onMouseDown', 'onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseOut', 'onMouseOver', 'onMouseUp', 'onSelect', 'onTouchCancel', 'onTouchEnd', 'onTouchMove', 'onTouchStart', 'onScroll', 'onWheel', 'onAbort', 'onCanPlay', 'onCanPlayThrough', 'onDurationChange', 'onEmptied', 'onEncrypted', 'onEnded', 'onError', 'onLoadedData', 'onLoadedMetadata', 'onLoadStart', 'onPause', 'onPlay', 'onPlaying', 'onProgress', 'onRateChange', 'onSeeked', 'onSeeking', 'onStalled', 'onSuspend', 'onTimeUpdate', 'onVolumeChange', 'onWaiting', 'onLoad', 'onError', 'onAnimationStart', 'onAnimationEnd', 'onAnimationIteration', 'onTransitionEnd'];
+						var ignoredFields = ['ref', 'children', 'onCopy', 'onCut', 'onPaste', 'onCompositionEnd', 'onCompositionStart', 'onCompositionUpdate', 'onKeyDown', 'onKeyPress', 'onKeyUp', 'onFocus', 'onBlur', 'onChange', 'onInput', 'onSubmit', 'onClick', 'onContextMenu', 'onDoubleClick', 'onDrag', 'onDragEnd', 'onDragEnter', 'onDragExit', 'onDragLeave', 'onDragOver', 'onDragStart', 'onDrop', 'onMouseDown', 'onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseOut', 'onMouseOver', 'onMouseUp', 'onSelect', 'onTouchCancel', 'onTouchEnd', 'onTouchMove', 'onTouchStart', 'onScroll', 'onWheel', 'onAbort', 'onCanPlay', 'onCanPlayThrough', 'onDurationChange', 'onEmptied', 'onEncrypted', 'onEnded', 'onError', 'onLoadedData', 'onLoadedMetadata', 'onLoadStart', 'onPause', 'onPlay', 'onPlaying', 'onProgress', 'onRateChange', 'onSeeked', 'onSeeking', 'onStalled', 'onSuspend', 'onTimeUpdate', 'onVolumeChange', 'onWaiting', 'onLoad', 'onError', 'onAnimationStart', 'onAnimationEnd', 'onAnimationIteration', 'onTransitionEnd'];
 
 						for (field in fields) {
 							if (ignoredFields.indexOf(field) > -1) {
 								continue;
 							}
-							var value = Reflect.field(props, field);
+							var value:Any = Reflect.field(props, field);
 							if (field == 'dangerouslySetInnerHTML') {
 								var data:Dynamic = value;
 								dangerousInnerHtml = (data != null) ? data.__html : null;
 								continue;
+							}
+							if (tag  == 'textarea') {
+								if (field == 'value' || field == 'defaultValue') {
+									dangerousInnerHtml = value;
+									continue;
+								}
+							}
+							if (field == 'style') {
+								var styleObject:Dynamic<String> = value;
+								var styleRules = [];
+								for (styleField in Reflect.fields(styleObject)) {
+									var styleValue = Reflect.field(styleObject, styleField);
+									var styleName = transformJsNameToCssName(styleField);
+									styleRules.push('$styleName:$styleValue;');
+								}
+								value = styleRules.join("");
 							}
 							value = StringTools.htmlEscape(value);
 							if (field == 'className') {
@@ -186,6 +202,19 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 				}
 				return str;
 		}
+	}
+
+	static function transformJsNameToCssName(jsName:String):String {
+		var cssName = "";
+		for (i in 0...jsName.length) {
+			var char = jsName.charAt(i);
+			if (char.toUpperCase() == char) {
+				cssName += '-';
+				char = char.toLowerCase();
+			}
+			cssName += char;
+		}
+		return cssName;
 	}
 
 	@:from
