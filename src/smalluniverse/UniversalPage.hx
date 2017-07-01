@@ -77,21 +77,6 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 	/**
 		TODO
 	**/
-	public function renderToString():Promise<String> {
-		return this.get().map(function (outcome:Outcome<TProps,Error>) {
-			return switch outcome {
-				case Success(props):
-					this.props = props;
-					return Success(this.render().renderToString());
-				case Failure(err):
-					return Failure(err);
-			}
-		});
-	}
-
-	/**
-		TODO
-	**/
 	public function route(req:Request<TParams>, res:Response):Void {
 		var isApiRequest = req.header.byName('x-small-universe-api').isSuccess();
 		var contentType = isApiRequest ? 'application/json' : 'text/html';
@@ -157,6 +142,7 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 
 	function renderFullHtml(res:Response, props:TProps) {
 		this.props = props;
+		this.componentWillMount();
 		var appHtml = this.render().renderToString();
 		var propsJson = serializeProps(props);
 		var pageName = Type.getClassName(Type.getClass(this));

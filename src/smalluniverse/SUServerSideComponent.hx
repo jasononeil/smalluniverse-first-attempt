@@ -20,6 +20,18 @@ class SUServerSideComponent<TProps, TState, TRefs> {
 	}
 
 	/**
+		Set the state for the current component.
+		Please note that on a server-side component, the only place the state can be set is during `componentWillMount`.
+		Here the state can be set to either a default value, or a value derived from `this.props`.
+
+		Please note, currently on the server side setting the state overrides the old state with the new one.
+		This is different to the behaviour with React on the client, where it will partially overwrite the old one, and only change values you specify.
+	**/
+	public function setState(newState:TState):Void {
+		this.state = newState;
+	}
+
+	/**
 		https://facebook.github.io/react/docs/react-component.html#render
 	**/
 	public function render():SUServerSideNode {
@@ -277,6 +289,7 @@ abstract SUServerSideRenderFn<TProps>(UniversalFunctionalComponent<TProps>) from
 	public static function fromClassComponent<TProps>(cls:Class<SUServerSideComponent<TProps,Dynamic,Dynamic>>):SUServerSideRenderFn<TProps> {
 		return function (props:TProps):SUServerSideNode {
 			var component = Type.createInstance(cls, [props]);
+			component.componentWillMount();
 			return component.render();
 		}
 	}
