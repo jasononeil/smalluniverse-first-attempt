@@ -42,7 +42,7 @@ class SUBuildMacro {
 
 	static function emptyMethodBodies(cb:ClassBuilder):Void {
 		for (member in cb) {
-			emptyField(member, false);
+			emptyField(cb, member, false);
 		}
 	}
 
@@ -50,13 +50,18 @@ class SUBuildMacro {
 		for (member in cb) {
 			// Empty fields with `@:client` metadata.
 			switch member.extractMeta(metaName) {
-				case Success(_): emptyField(member, true);
+				case Success(_): emptyField(cb, member, true);
 				default:
 			}
 		}
 	}
 
-	static function emptyField(member:Member, changeSignature:Bool):Void {
+	static function emptyField(cb:ClassBuilder, member:Member, changeSignature:Bool):Void {
+		// If the member overrides a parent, it is safe to just remove it entirely.
+		if (member.overrides) {
+			cb.removeMember(member);
+			return;
+		}
 		switch member.kind {
 			// Leave the function or variable in place so it exists in case there is a reference to it.
 			// But make all types "Any", and make the expression empty, so it won't cause compile time issues.
