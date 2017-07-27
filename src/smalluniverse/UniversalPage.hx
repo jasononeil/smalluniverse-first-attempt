@@ -204,11 +204,8 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 	/**
 		TODO:
 	**/
-	public static function startClientRendering() {
-		var propsElem = document.getElementById('small-universe-props');
-		var pageCls = Type.resolveClass(propsElem.getAttribute('data-page'));
-		var propsJson = propsElem.innerText;
-		var page = Type.createInstance(pageCls, []);
+	public static function startClientRendering(cls:Class<Dynamic>, propsJson:String) {
+		var page = Type.createInstance(cls, []);
 		page.props = page.deserializeProps(propsJson);
 		page.doClientRender();
 	}
