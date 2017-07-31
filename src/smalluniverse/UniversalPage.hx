@@ -43,13 +43,14 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 	public var backendApi:BackendApi<TAction, TParams, TProps>;
 
 	/**
-		An object containing the route parameters from the current request.
+		An object containing the server-side request information.
 
+		The `request.params` will be correctly typed as `TParams`.
 		This is set just before `route()` is called.
 
 		Please note this is currently only available on the server.
 	**/
-	public var params(default, null):TParams;
+	public var request(default, null):Request<TParams>;
 	#end
 
 	public function new(backendApi:BackendApi<TAction, TParams, TProps>) {
@@ -67,7 +68,7 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 	**/
 	public function get():Promise<TProps> {
 		#if server
-			return this.backendApi.get(this.params);
+			return this.backendApi.get(this.request);
 		#elseif client
 			return this.callServerAction(None).next(function (_) return this.props);
 		#end
@@ -84,14 +85,14 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 
 		var propsPromise:Promise<Either<TProps,String>> = switch req.method {
 			case GET:
-				this.backendApi.get(req.params).next(function (p) return Left(p));
+				this.backendApi.get(req).next(function (p) return Left(p));
 			case POST:
 				// Execute the action, then fetch the props.
 				getBodyString(req)
 					.next(function (json) return deserializeAction(json))
-					.next(function (action) return this.backendApi.processAction(req.params, action))
+					.next(function (action) return this.backendApi.processAction(req, action))
 					.next(function (result) return switch result {
-						case Done: this.backendApi.get(req.params).next(function (p) return Left(p));
+						case Done: this.backendApi.get(req).next(function (p) return Left(p));
 						case Redirect(url): Right(url);
 					});
 			case _:

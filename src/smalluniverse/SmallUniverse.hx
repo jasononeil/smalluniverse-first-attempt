@@ -20,7 +20,7 @@ class SmallUniverse {
 	public function addPage<T>(route:String, pageToUse:LazyUniversalPage) {
 		app.use(route, function (req:Request<T>, res:Response) {
 			var page = pageToUse();
-			@:privateAccess page.params = req.params;
+			@:privateAccess page.request = req;
 			page.route(req, res);
 		});
 	}

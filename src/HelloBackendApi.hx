@@ -12,10 +12,10 @@ TODO: document.
 class HelloBackendApi implements smalluniverse.BackendApi<HelloActions, HelloParams, HelloProps> {
 	public function new() {}
 
-	public function get(params:HelloParams):Promise<HelloProps> {
+	public function get(req:Request<HelloParams>):Promise<HelloProps> {
 		var json = File.getContent('props.json');
 		var props:{name:String, age:Int} = Json.parse(json);
-		var location = params.location;
+		var location = req.params.location;
 		return {
 			name: props.name,
 			age: props.age,
@@ -23,7 +23,7 @@ class HelloBackendApi implements smalluniverse.BackendApi<HelloActions, HelloPar
 		};
 	}
 
-	public function processAction(params:HelloParams, action:HelloActions):Promise<BackendApiResult> {
+	public function processAction(req:Request<HelloParams>, action:HelloActions):Promise<BackendApiResult> {
 		var json = File.getContent('props.json');
 		var props:{name:String, age:Int} = Json.parse(json);
 		switch action {

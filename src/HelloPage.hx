@@ -38,8 +38,7 @@ class HelloPage extends UniversalPage<HelloActions, HelloParams, HelloProps, {},
 
 	@:client
 	function clickHeader() {
-		trigger(GetOlder).handle(function (outcome:Outcome<HelloProps,Error>) {
-			var props = outcome.sure();
+		trigger(GetOlder).handle(function (_) {
 			Browser.alert('Successfully made you older, you are now ${props.age} years old');
 		});
 	}

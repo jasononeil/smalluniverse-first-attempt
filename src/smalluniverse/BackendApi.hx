@@ -2,6 +2,10 @@ package smalluniverse;
 
 import tink.CoreApi;
 
+typedef Request<TParams> =
+	#if server Monsoon.Request<TParams>;
+	#else Dynamic; #end
+
 enum BackendApiResult {
 	Done;
 	Redirect(url:String);
@@ -32,7 +36,7 @@ interface BackendApi<TAction, TParams, TProps> {
 
 	If you would like the client side to update it's properties before the server returns its result, you can use a `FrontendApi`.
 	**/
-	public function get(params:TParams):Promise<TProps>;
+	public function get(req:Request<TParams>):Promise<TProps>;
 
 	/**
 	Execute an action on the server.
@@ -43,5 +47,5 @@ interface BackendApi<TAction, TParams, TProps> {
 	After actions have been processed by the server, a new `get()` call will be made and will return updated properties to the client.
 	This allows each `processAction` call to focus purely on applying the changes, and not worry about fetching and mutating state objects to be rendered.
 	**/
-	public function processAction(params:TParams, action:TAction):Promise<BackendApiResult>;
+	public function processAction(req:Request<TParams>, action:TAction):Promise<BackendApiResult>;
 }
