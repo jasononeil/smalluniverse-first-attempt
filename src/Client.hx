@@ -2,14 +2,21 @@ import smalluniverse.UniversalPage;
 import js.Browser.window;
 import js.Browser.document;
 
-// Import the pages we will need. They will be loaded via Reflection (for now).
-import AboutPage;
-import HelloPage;
-
 class Client {
 	static function main() {
 		onReady(function () {
-			UniversalPage.startClientRendering();
+			var propsElem = document.getElementById('small-universe-props');
+			switch propsElem.getAttribute('data-page') {
+				case 'AboutPage':
+					Webpack.load(AboutPage).then(function () {
+						UniversalPage.startClientRendering(AboutPage, propsElem.innerText);
+					});
+				case 'HelloPage':
+					Webpack.load(HelloPage).then(function () {
+						UniversalPage.startClientRendering(HelloPage, propsElem.innerText);
+					});
+				default: null;
+			}
 		});
 	}
 

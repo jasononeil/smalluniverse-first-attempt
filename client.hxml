@@ -2,8 +2,8 @@
 -lib react
 -lib tink_core
 -lib tink_macro
-# Until 0.6.0 is published to haxelib we need `haxelib git tink_json https://github.com/haxetink/tink_json.git 0.6.0`
 -lib tink_json
+-lib haxe-loader
 -cp src
 -main Client
 -js www/react-test.haxe.js
