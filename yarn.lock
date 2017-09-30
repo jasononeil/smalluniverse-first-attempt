@@ -317,6 +317,10 @@ browserslist@^1.3.6, browserslist@^1.5.2, browserslist@^1.7.6:
     caniuse-db "^1.0.30000639"
     electron-to-chromium "^1.2.7"
 
+buffer-crc32@~0.2.3:
+  version "0.2.13"
+  resolved "https://registry.yarnpkg.com/buffer-crc32/-/buffer-crc32-0.2.13.tgz#0d333e3f00eac50aa1454abd30ef8c2a5d9a7242"
+
 buffer-shims@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/buffer-shims/-/buffer-shims-1.0.0.tgz#9978ce317388c649ad8793028c3477ef044a8b51"
@@ -953,6 +957,12 @@ fbjs@^0.8.9:
     setimmediate "^1.0.5"
     ua-parser-js "^0.7.9"
 
+fd-slicer@~1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/fd-slicer/-/fd-slicer-1.0.1.tgz#8b5bcbd9ec327c5041bf9ab023fd6750f1177e65"
+  dependencies:
+    pend "~1.2.0"
+
 filename-regex@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/filename-regex/-/filename-regex-2.0.0.tgz#996e3e80479b98b9897f15a8a58b3d084e926775"
@@ -1156,6 +1166,10 @@ hawk@~3.1.3:
 haxe-loader@^0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/haxe-loader/-/haxe-loader-0.1.2.tgz#d47701c5e3c27398f3ed4932d6e0e30230ebb6bb"
+
+haxeshim@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/haxeshim/-/haxeshim-0.9.0.tgz#2466ed0cd14bbee369b4fdd20251879620fe97fa"
 
 hmac-drbg@^1.0.0:
   version "1.0.1"
@@ -1509,6 +1523,10 @@ less@^2.7.2:
     promise "^7.1.1"
     request "^2.72.0"
     source-map "^0.5.3"
+
+lix.pm@^0.10.2:
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/lix.pm/-/lix.pm-0.10.2.tgz#5c8e0731f44d293b58c6583dbfaeb9f2b0c10d34"
 
 load-json-file@^1.0.0:
   version "1.1.0"
@@ -1915,6 +1933,10 @@ pbkdf2@^3.0.3:
   resolved "https://registry.yarnpkg.com/pbkdf2/-/pbkdf2-3.0.9.tgz#f2c4b25a600058b3c3773c086c37dbbee1ffe693"
   dependencies:
     create-hmac "^1.1.2"
+
+pend@~1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
 
 performance-now@^0.2.0:
   version "0.2.0"
@@ -2734,6 +2756,13 @@ svgo@^0.7.0:
     sax "~1.2.1"
     whet.extend "~0.9.9"
 
+switchx@^0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/switchx/-/switchx-0.12.0.tgz#d62885e2b2a05ff330611d5221ef0f2b3fb31685"
+  dependencies:
+    tar "=2.2.1"
+    yauzl "=2.6.0"
+
 tapable@^0.2.5, tapable@~0.2.5:
   version "0.2.6"
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-0.2.6.tgz#206be8e188860b514425375e6f1ae89bfb01fd8d"
@@ -2751,7 +2780,7 @@ tar-pack@^3.4.0:
     tar "^2.2.1"
     uid-number "^0.0.6"
 
-tar@^2.2.1:
+tar@=2.2.1, tar@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/tar/-/tar-2.2.1.tgz#8e4d2a256c0e2185c6b18ad694aec968b83cb1d1"
   dependencies:
@@ -3070,3 +3099,10 @@ yargs@~3.10.0:
     cliui "^2.1.0"
     decamelize "^1.0.0"
     window-size "0.1.0"
+
+yauzl@=2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/yauzl/-/yauzl-2.6.0.tgz#40894d4587bb125500d05df45471cd5e114a76f9"
+  dependencies:
+    buffer-crc32 "~0.2.3"
+    fd-slicer "~1.0.1"
