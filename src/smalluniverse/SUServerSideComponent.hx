@@ -104,12 +104,9 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 		return this;
 	}
 
-	public function renderToString(?startingId:Ref<Int>, ?onlyChild = false):String {
+	public function renderToString(?onlyChild = false):String {
 		if (this == null) {
 			return "";
-		}
-		if (startingId == null) {
-			startingId = Ref.to(0);
 		}
 		switch this {
 			case Text(str):
@@ -117,14 +114,9 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 				if (onlyChild) {
 					return str;
 				}
-				startingId.value = startingId.value + 1;
-				return '<!-- react-text: ${startingId.value} -->${str}<!-- /react-text -->';
+				return '<!-- react-text -->${str}<!-- /react-text -->';
 			case Html(tag, props, children):
-				startingId.value = startingId.value + 1;
-
-				var isRootNode = (startingId.value == 1),
-					idOfCurrentNode = startingId.value,
-					openingTag = "",
+				var openingTag = "",
 					attrsHtml = "",
 					childrenHtml = "",
 					dangerousInnerHtml:String = null;
@@ -173,44 +165,29 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 					childrenHtml = dangerousInnerHtml;
 				} else if (children != null) {
 					for (child in children) {
-						childrenHtml += child.renderToString(startingId, children.length == 1);
+						childrenHtml += child.renderToString(children.length == 1);
 					}
 				}
 
 				openingTag = '<$tag';
-				var reactRootTag = isRootNode ? ' data-reactroot=""' : '';
 				var selfClosingTags = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 				var selfClosingTag = (selfClosingTags.indexOf(tag) > -1) ? '/>' : '></$tag>';
 				var html =
 					openingTag
 					 + attrsHtml
-					 + reactRootTag
-					 + ' data-reactid="${idOfCurrentNode}"'
 					 + ((childrenHtml != "") ? ">" : selfClosingTag)
 					 + childrenHtml
 					 + ((childrenHtml != "") ? '</${tag}>' : '');
-				if (isRootNode) {
-					var checksum:Float = Adler32.make(Bytes.ofString(html));
-					if (checksum > Math.pow(2, 16)) {
-						// Make sure the checksum is in the Int32 range (-2^16 through to +2^16).
-						// Even though Adler32 returns an Int, PHP is allowing it's value to exceed this.
-						// TODO: file a bug report and pull request so haxe.Adler32 works with Int32s.
-						checksum = checksum - Math.pow(2, 32);
-					}
-					// Insert the checksum at the end of the opening element.
-					var TAG_END = ~/( ?\/?>)/;
-					html = TAG_END.replace(html,  ' data-react-checksum="$checksum"$1');
-				}
 				return html;
 			case Component(component, props, children):
 				// We don't render and markup for the component or it's children directly.
 				// We leave it entirely up to the component to render itself.
 				props.children = fromArray(children);
-				return component.render(props).renderToString(startingId);
+				return component.render(props).renderToString();
 			case NodeList(arr):
 				var str = "";
 				for (node in arr) {
-					str += node.renderToString(startingId);
+					str += node.renderToString();
 				}
 				return str;
 		}
