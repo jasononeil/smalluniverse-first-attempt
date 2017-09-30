@@ -8,13 +8,13 @@ class Client {
 			var propsElem = document.getElementById('small-universe-props');
 			switch propsElem.getAttribute('data-page') {
 				case 'AboutPage':
-					Webpack.load(AboutPage).then(function () {
-						UniversalPage.startClientRendering(AboutPage, propsElem.innerText);
-					});
+					UniversalPage.startClientRendering(AboutPage, propsElem.innerText);
+					// Webpack.load(AboutPage).then(function () {
+					// });
 				case 'HelloPage':
-					Webpack.load(HelloPage).then(function () {
-						UniversalPage.startClientRendering(HelloPage, propsElem.innerText);
-					});
+					UniversalPage.startClientRendering(HelloPage, propsElem.innerText);
+					// Webpack.load(HelloPage).then(function () {
+					// });
 				default: null;
 			}
 		});

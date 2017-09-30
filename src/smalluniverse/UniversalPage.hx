@@ -213,13 +213,13 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 
 	function doClientRender<TProps>() {
 		#if client
-		var pageCls:Class<react.ReactComponent.ReactComponent> = cast Type.getClass(this);
+		var pageCls:Class<react.ReactComponent.ReactComponent> = cast Type.getClass(this),
+			pageElm = React.createElement(pageCls, this.props),
+			container = document.getElementById('small-universe-app');
 		// Note: React is smart enough to maintain our instance and not recreate a new one,
 		// even though we are passing in the class and not the instance.
-		ReactDOM.render(
-			React.createElement(pageCls, this.props),
-			document.getElementById('small-universe-app')
-		);
+
+		ReactDOM.hydrate(pageElm, container);
 		#end
 	}
 
