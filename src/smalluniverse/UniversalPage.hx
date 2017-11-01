@@ -69,6 +69,12 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 			return this.render().renderToString();
 		});
 	}
+
+	public function getPageJson(): Promise<String> {
+		return this.get().next(function (props) {
+			return this.serializeProps(props);
+		});
+	}
 	#end
 
 	function deserializeProps(json:String):TProps {
@@ -126,7 +132,7 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 				new Request(window.location.href, {
 					method: 'POST',
 					headers: new Headers({
-						'x-small-universe-api': '1'
+						'Accept': 'application/json',
 					}),
 					body: serializeAction(a)
 				});
@@ -134,7 +140,7 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 				new Request(window.location.href, {
 					method: 'GET',
 					headers: new Headers({
-						'x-small-universe-api': '1'
+						'Accept': 'application/json',
 					})
 				});
 		};

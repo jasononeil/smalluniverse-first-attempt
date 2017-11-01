@@ -26,10 +26,18 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 		this = page;
 	}
 
+	static inline function header(status: Int, contentType: String) {
+		return new ResponseHeader(status, status, [new HeaderField('Content-Type', contentType)]);
+	}
+
 	@:to
 	public function render(): Promise<OutgoingResponse> {
-		// TODO: check context first to decide if we should be returning JSON instead of HTML.
-		return renderHtml();
+		// TODO: check if this is a post request, in which case there would need to be an action to execute.
+		if (this.context.accepts('text/html')) {
+			return renderHtml();
+		} else {
+			return renderJson();
+		}
 	}
 
 	public function renderHtml(): Promise<OutgoingResponse> {
@@ -44,8 +52,17 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 			html = StringTools.replace(html, '{PROPS}', propsJson);
 
 			return new OutgoingResponse(
-				new ResponseHeader(200, 200, [new HeaderField('Content-Type', 'text/html')]),
+				header(200, 'text/html'),
 				html
+			);
+		});
+	}
+
+	public function renderJson(): Promise<OutgoingResponse> {
+		return this.getPageJson().next(function (pageJson) {
+			return new OutgoingResponse(
+				header(200, 'application/json'),
+				pageJson
 			);
 		});
 	}
