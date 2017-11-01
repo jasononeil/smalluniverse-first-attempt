@@ -4,7 +4,6 @@ import sys.io.File;
 import tink.Json;
 import HelloPage;
 import smalluniverse.BackendApi;
-import smalluniverse.SmallUniverseContext;
 using tink.CoreApi;
 
 /**
@@ -14,7 +13,10 @@ class HelloBackendApi implements BackendApi<HelloActions, HelloProps> {
 	var location:String;
 
 	public function new(location) {
+		// TODO: see if we can get the build macro to empty the constructor also.
+		#if server
 		this.location = location;
+		#end
 	}
 
 	public function get(context):Promise<HelloProps> {
