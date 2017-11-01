@@ -11,7 +11,7 @@ import tink.CoreApi;
 
 	It is designed to be mostly compatible with React components, for a subclass to extend either this or React.Component directly, and the code to work seamlessly on either.
 **/
-class SUServerSideComponent<TProps, TState, TRefs> {
+class SUServerSideComponent<TProps, TState> {
 	public var props(default, null):TProps;
 	public var state(default, null):TState;
 
@@ -263,7 +263,7 @@ abstract SUServerSideRenderFn<TProps>(UniversalFunctionalComponent<TProps>) from
 	}
 
 	@:from
-	public static function fromClassComponent<TProps>(cls:Class<SUServerSideComponent<TProps,Dynamic,Dynamic>>):SUServerSideRenderFn<TProps> {
+	public static function fromClassComponent<TProps>(cls:Class<SUServerSideComponent<TProps,Dynamic>>):SUServerSideRenderFn<TProps> {
 		return function (props:TProps):SUServerSideNode {
 			var component = Type.createInstance(cls, [props]);
 			component.componentWillMount();

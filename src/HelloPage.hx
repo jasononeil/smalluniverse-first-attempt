@@ -19,10 +19,10 @@ typedef HelloParams = {location:String};
 
 typedef HelloProps = {name:String, location:String, age:Int};
 
-class HelloPage extends UniversalPage<HelloActions, HelloParams, HelloProps, {}, {}> {
+class HelloPage extends UniversalPage<HelloActions, HelloProps, {}> {
 
-	public function new() {
-		super(new HelloBackendApi());
+	public function new(location:String) {
+		super(new HelloBackendApi(location));
 		this.head.addScript('js/react-test.bundle.js');
 		this.head.setTitle('Hello!');
 	}

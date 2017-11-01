@@ -89,9 +89,9 @@ class SUBuildMacro {
 	}
 
 	static function addCustomSerializeMethods(cb:ClassBuilder) {
-		// Note: we are assuming we are extending UniversalPage<TAction, TParams, TProps, TState, TRef>. Which may not be the case.
-		var propsCT = cb.target.superClass.params[2].toComplex();
+		// Note: we are assuming we are extending UniversalPage<TAction, TProps, TRef>. Which may not be the case.
 		var actionsCT = cb.target.superClass.params[0].toComplex();
+		var propsCT = cb.target.superClass.params[1].toComplex();
 		addSerializeMethods(cb, 'Props', propsCT);
 		addSerializeMethods(cb, 'Action', actionsCT);
 	}

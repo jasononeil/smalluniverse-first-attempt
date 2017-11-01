@@ -9,30 +9,13 @@ package smalluniverse;
 	import js.Browser.console;
 	import js.html.*;
 #elseif server
-	import monsoon.Request;
-	import monsoon.Response;
 #end
 import smalluniverse.UniversalComponent;
 import tink.Json;
 using tink.CoreApi;
 
 @:autoBuild(smalluniverse.SUBuildMacro.buildUniversalPage())
-class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalComponent<TProps, TState, TRefs> {
-
-	/**
-		The template to use for rendering basic page markup server side.
-
-		The default should be sufficient for most use cases.
-
-		Use `{BODY}`, `{HEAD}`, `{PAGE}` and `{PROPS}` literals as insertion points.
-	**/
-	static var template:String = '<html>
-		<head>{HEAD}</head>
-		<body>
-			<div id="small-universe-app">{BODY}</div>
-			<script id="small-universe-props" type="text/json" data-page="{PAGE}">{PROPS}</script>
-		</body>
-	</html>';
+class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, TState> {
 
 	public var head(default, null):UniversalPageHead;
 
@@ -40,20 +23,17 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 	/**
 	TODO
 	**/
-	public var backendApi:BackendApi<TAction, TParams, TProps>;
+	public var backendApi:BackendApi<TAction, TProps>;
 
 	/**
 		An object containing the server-side request information.
 
-		The `request.params` will be correctly typed as `TParams`.
-		This is set just before `route()` is called.
-
-		Please note this is currently only available on the server.
+		Please note this is only available on the server.
 	**/
-	public var request(default, null):Request<TParams>;
+	public var context(default, null):SmallUniverseContext;
 	#end
 
-	public function new(backendApi:BackendApi<TAction, TParams, TProps>) {
+	public function new(?backendApi:BackendApi<TAction, TProps>) {
 		// A page should not receive props through a constructor, but through it's get() method.
 		super();
 		this.head = new UniversalPageHead();
@@ -68,7 +48,7 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 	**/
 	public function get():Promise<TProps> {
 		#if server
-			return this.backendApi.get(this.request);
+			return this.backendApi.get(this.context);
 		#elseif client
 			return this.callServerAction(None).next(function (_) return this.props);
 		#end
@@ -76,104 +56,18 @@ class UniversalPage<TAction, TParams, TProps, TState, TRefs> extends UniversalCo
 
 	#if server
 	/**
-		TODO
+	Render the HTML for this Universal page.
+
+	This will fetch the current props using `get()`, call the `componentWillMount()` lifecycle method, and then render to a String.
+
+	Please note this HTML is for the component, not for the full page (including `<head>`, `<title>` etc).
 	**/
-	public function route(req:Request<TParams>, res:Response):Void {
-		var isApiRequest = req.header.byName('x-small-universe-api').isSuccess();
-		var contentType = isApiRequest ? 'application/json' : 'text/html';
-		res.set('content-type', contentType);
-
-		var propsPromise:Promise<Either<TProps,String>> = switch req.method {
-			case GET:
-				this.backendApi.get(req).next(function (p) return Left(p));
-			case POST:
-				// Execute the action, then fetch the props.
-				getBodyString(req)
-					.next(function (json) return deserializeAction(json))
-					.next(function (action) return this.backendApi.processAction(req, action))
-					.next(function (result) return switch result {
-						case Done: this.backendApi.get(req).next(function (p) return Left(p));
-						case Redirect(url): Right(url);
-					});
-			case _:
-				var err = new Error('Expected method to be GET or POST, was' + req.method);
-				Future.sync(Failure(err));
-		}
-
-		propsPromise.handle(function (outcome) {
-			switch outcome {
-				case Success(Left(props)):
-					res.status(200);
-					if (isApiRequest) {
-						var json = serializeProps(props);
-						res.send(json);
-					} else {
-						renderFullHtml(res, props);
-					}
-				case Success(Right(url)):
-					if (isApiRequest) {
-						res.status(200);
-						var json = Json.stringify({
-							__smallUniverse: {
-								redirect: url
-							}
-						});
-						res.send(json);
-					} else {
-						res.redirect(url);
-					}
-				case Failure(err):
-					res.status(err.code);
-					if (isApiRequest) {
-						// TODO: get tink_json to serialize an Error directly.
-						var errorSummary = {
-							code: (err.code:Int),
-							message: err.message,
-						};
-						var json = Json.stringify(errorSummary);
-						res.send(json);
-					} else {
-						// TODO: have a way to set a custom error handler.
-						var html = '<pre>${err.toString()}</pre>';
-						res.send(html);
-					}
-			}
+	public function getPageHtml(): Promise<String> {
+		return this.get().next(function (props) {
+			this.props = props;
+			this.componentWillMount();
+			return this.render().renderToString();
 		});
-	}
-
-	function renderFullHtml(res:Response, props:TProps) {
-		this.props = props;
-		this.componentWillMount();
-		var appHtml = this.render().renderToString();
-		var propsJson = serializeProps(props);
-		var pageName = Type.getClassName(Type.getClass(this));
-		var head = this.head.renderToString();
-		var html = smalluniverse.UniversalPage.template;
-		html = StringTools.replace(html, '{BODY}', appHtml);
-		html = StringTools.replace(html, '{HEAD}', head);
-		html = StringTools.replace(html, '{PAGE}', pageName);
-		html = StringTools.replace(html, '{PROPS}', propsJson);
-		res.send(html);
-	}
-
-	static function getBodyString<T>(req:Request<T>):Promise<String> {
-		switch req.body {
-			case Plain(source):
-				return source.all().asPromise().next(function (bytes) return bytes.toString());
-			case Parsed(structuredBody):
-				for (part in structuredBody) {
-					switch part.value {
-						case Value(val):
-							if (part.name == 'action') {
-								return val;
-							}
-							// TODO: decide if there's any reason to check for other values.
-						case File(handle):
-							// TODO: decide if we want to handle file uploads here.
-					}
-				}
-				return new Error('Expected response body to either be JSON, or have an `action` parameter containing the JSON.');
-		}
 	}
 	#end
 

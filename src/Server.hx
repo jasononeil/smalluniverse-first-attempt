@@ -1,14 +1,47 @@
-import monsoon.Monsoon;
-import monsoon.middleware.Static;
+import tink.http.containers.*;
+import tink.http.Response;
+import tink.http.Handler;
+import tink.web.routing.*;
+import tink.http.middleware.Static;
+import tink.http.Response.OutgoingResponse;
+// import monsoon.Monsoon;
+// import monsoon.middleware.Static;
 import smalluniverse.SmallUniverse;
 
 class Server {
-	static function main() {
-		var app = new Monsoon();
-		app.use('/js', Static.serve('js'));
-		var smallUniverse = new SmallUniverse(app);
-		smallUniverse.addPage('/about', AboutPage);
-		smallUniverse.addPage('/:location?', HelloPage);
-		app.listen(3000);
+    static function main() {
+        var container = new NodeContainer(8080);
+        var router = new Router<Root>(new Root());
+		var handler:Handler = function(req) {
+            return router.route(Context.ofRequest(req))
+                .recover(OutgoingResponse.reportError);
+        };
+        container
+            .run(handler.applyMiddleware(new Static('js', '/js/')))
+            .handle(function (status) {
+                switch status {
+                    case Running(arg1):
+                        trace('Running: Listening on port 8080');
+                    case Failed(err):
+                        trace('Error starting server: $err');
+                    case Shutdown:
+                        trace('Shutdown successful');
+                };
+            });
+    }
+}
+
+class Root {
+    public function new() {}
+
+	@:get
+	public function about(context: Context) {
+		return new SmallUniverse(context, new AboutPage());
+	}
+
+    @:get('/')
+    @:get('/$location')
+    public function hello(context: Context, location = 'World') {
+		return new SmallUniverse(context, new HelloPage(location));
 	}
 }

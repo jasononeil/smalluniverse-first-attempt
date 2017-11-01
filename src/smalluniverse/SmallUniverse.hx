@@ -1,27 +1,52 @@
 package smalluniverse;
 
-import smalluniverse.SUServerSideComponent;
-import smalluniverse.SUMacro.jsx;
-import smalluniverse.LazyUniversalPage;
-import monsoon.Request;
-import monsoon.Response;
-using StringTools;
+import tink.http.Response;
+import tink.http.Header;
 using tink.CoreApi;
 
-class SmallUniverse {
+abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
+	/**
+		The template to use for rendering basic page markup server side.
 
-	public var app:Monsoon;
+		The default should be sufficient for most use cases.
 
-	public function new(monsoonApp:Monsoon) {
-		this.app = monsoonApp;
-		monsoonApp.use(new SULogMiddleware());
+		Use `{BODY}`, `{HEAD}`, `{PAGE}` and `{PROPS}` literals as insertion points.
+	**/
+	static var template:String = '<html>
+		<head>{HEAD}</head>
+		<body>
+			<div id="small-universe-app">{BODY}</div>
+			<script id="small-universe-props" type="text/json" data-page="{PAGE}">{PROPS}</script>
+		</body>
+	</html>';
+
+	public function new(context: SmallUniverseContext, pageToUse:LazyUniversalPage) {
+		var page = pageToUse();
+		@:privateAccess page.context = context;
+		this = page;
 	}
 
-	public function addPage<T>(route:String, pageToUse:LazyUniversalPage) {
-		app.use(route, function (req:Request<T>, res:Response) {
-			var page = pageToUse();
-			@:privateAccess page.request = req;
-			page.route(req, res);
+	@:to
+	public function render(): Promise<OutgoingResponse> {
+		// TODO: check context first to decide if we should be returning JSON instead of HTML.
+		return renderHtml();
+	}
+
+	public function renderHtml(): Promise<OutgoingResponse> {
+		return this.getPageHtml().next(function (pageHtml) {
+			var propsJson = @:privateAccess this.serializeProps(this.props);
+			var pageName = Type.getClassName(Type.getClass(this));
+			var head = this.head.renderToString();
+			var html = SmallUniverse.template;
+			html = StringTools.replace(html, '{BODY}', pageHtml);
+			html = StringTools.replace(html, '{HEAD}', head);
+			html = StringTools.replace(html, '{PAGE}', pageName);
+			html = StringTools.replace(html, '{PROPS}', propsJson);
+
+			return new OutgoingResponse(
+				new ResponseHeader(200, 200, [new HeaderField('Content-Type', 'text/html')]),
+				html
+			);
 		});
 	}
 }

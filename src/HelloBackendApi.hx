@@ -4,26 +4,30 @@ import sys.io.File;
 import tink.Json;
 import HelloPage;
 import smalluniverse.BackendApi;
+import smalluniverse.SmallUniverseContext;
 using tink.CoreApi;
 
 /**
 TODO: document.
 **/
-class HelloBackendApi implements smalluniverse.BackendApi<HelloActions, HelloParams, HelloProps> {
-	public function new() {}
+class HelloBackendApi implements BackendApi<HelloActions, HelloProps> {
+	var location:String;
 
-	public function get(req:Request<HelloParams>):Promise<HelloProps> {
+	public function new(location) {
+		this.location = location;
+	}
+
+	public function get(context):Promise<HelloProps> {
 		var json = File.getContent('props.json');
 		var props:{name:String, age:Int} = Json.parse(json);
-		var location = req.params.location;
 		return {
 			name: props.name,
 			age: props.age,
-			location: (location!=null) ? location : "the world"
+			location: (this.location!=null) ? this.location : "the world"
 		};
 	}
 
-	public function processAction(req:Request<HelloParams>, action:HelloActions):Promise<BackendApiResult> {
+	public function processAction(context, action):Promise<BackendApiResult> {
 		var json = File.getContent('props.json');
 		var props:{name:String, age:Int} = Json.parse(json);
 		switch action {
