@@ -41,6 +41,8 @@ class Root {
 
     @:get('/')
     @:get('/$location')
+    @:post('/')
+    @:post('/$location')
     public function hello(context: Context, location = 'World') {
 		return new SmallUniverse(context, new HelloPage(location));
 	}

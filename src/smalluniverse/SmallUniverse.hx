@@ -2,6 +2,7 @@ package smalluniverse;
 
 import tink.http.Response;
 import tink.http.Header;
+import smalluniverse.BackendApi;
 using tink.CoreApi;
 
 abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
@@ -26,21 +27,57 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 		this = page;
 	}
 
+	@:to
+	public function render(): Promise<OutgoingResponse> {
+		if (this.context.hasParam('action')) {
+			return processAction().next(function (result): Promise<OutgoingResponse> switch result {
+				case Redirect(url):
+					return prepareRedirect(url);
+				case Done:
+					return renderPage();
+			});
+		}
+		return renderPage();
+	}
+
+	function processAction(): Promise<BackendApiResult> {
+		var actionJson = this.context.param('action');
+		var action = @:privateAccess this.deserializeAction(actionJson);
+		return this.backendApi.processAction(this.context, action);
+	}
+
+	function prepareRedirect(url: String): OutgoingResponse {
+		return new OutgoingResponse(
+			new ResponseHeader(301, 301, [
+				new HeaderField('Location', url)
+			]),
+			""
+		);
+	}
+
+	function renderPage(): Promise<OutgoingResponse> {
+		var isApiRequest = !this.context.accepts('text/html');
+		if (isApiRequest) {
+			return prepareJsonResponse();
+		} else {
+			return prepareHtmlResponse();
+		}
+	}
+
+	public function prepareJsonResponse(): Promise<OutgoingResponse> {
+		return this.getPageJson().next(function (pageJson) {
+			return new OutgoingResponse(
+				header(200, 'application/json'),
+				pageJson
+			);
+		});
+	}
+
 	static inline function header(status: Int, contentType: String) {
 		return new ResponseHeader(status, status, [new HeaderField('Content-Type', contentType)]);
 	}
 
-	@:to
-	public function render(): Promise<OutgoingResponse> {
-		// TODO: check if this is a post request, in which case there would need to be an action to execute.
-		if (this.context.accepts('text/html')) {
-			return renderHtml();
-		} else {
-			return renderJson();
-		}
-	}
-
-	public function renderHtml(): Promise<OutgoingResponse> {
+	public function prepareHtmlResponse(): Promise<OutgoingResponse> {
 		return this.getPageHtml().next(function (pageHtml) {
 			var propsJson = @:privateAccess this.serializeProps(this.props);
 			var pageName = Type.getClassName(Type.getClass(this));
@@ -54,15 +91,6 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 			return new OutgoingResponse(
 				header(200, 'text/html'),
 				html
-			);
-		});
-	}
-
-	public function renderJson(): Promise<OutgoingResponse> {
-		return this.getPageJson().next(function (pageJson) {
-			return new OutgoingResponse(
-				header(200, 'application/json'),
-				pageJson
 			);
 		});
 	}

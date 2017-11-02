@@ -129,12 +129,11 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 	function callServerAction(action:Option<TAction>):Promise<Noise> {
 		var request = switch action {
 			case Some(a):
-				new Request(window.location.href, {
+				new Request('${window.location.href}?action=${serializeAction(a)}', {
 					method: 'POST',
 					headers: new Headers({
 						'Accept': 'application/json',
 					}),
-					body: serializeAction(a)
 				});
 			case None:
 				new Request(window.location.href, {
