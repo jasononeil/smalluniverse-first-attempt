@@ -25,10 +25,11 @@ module.exports = {
     devServer: {
         contentBase: "./www",
         overlay: true,
+        port: 3333,
         proxy: {
             "/": {
                 changeOrigin: true,
-                target: "http://localhost:2000"
+                target: "http://localhost:8080"
             }
         },
         publicPath: "/js/"
