@@ -186,7 +186,6 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 						js.Browser.window.location.assign(response.__smallUniverse.redirect);
 						// Fulfill the promise, but do not execute a render.
 						return None;
-						// reject the promise?
 					}
 				} catch (e:Dynamic) {
 					// Ignore errors - they're probably just complaining if the field was missing.
