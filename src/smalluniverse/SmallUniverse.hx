@@ -64,7 +64,7 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 		}
 	}
 
-	public function prepareJsonResponse(): Promise<OutgoingResponse> {
+	function prepareJsonResponse(): Promise<OutgoingResponse> {
 		return this.getPageJson().next(function (pageJson) {
 			return new OutgoingResponse(
 				header(200, 'application/json'),
@@ -77,7 +77,7 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 		return new ResponseHeader(status, status, [new HeaderField('Content-Type', contentType)]);
 	}
 
-	public function prepareHtmlResponse(): Promise<OutgoingResponse> {
+	function prepareHtmlResponse(): Promise<OutgoingResponse> {
 		return this.getPageHtml().next(function (pageHtml) {
 			var propsJson = @:privateAccess this.serializeProps(this.props);
 			var pageName = Type.getClassName(Type.getClass(this));
