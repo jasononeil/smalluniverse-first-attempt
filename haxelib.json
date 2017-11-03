@@ -1,0 +1,20 @@
+{
+	"name": "smalluniverse",
+	"license": "MIT",
+	"tags": [
+		"web",
+		"universal"
+	],
+	"classPath": "src",
+	"description": " Make small universal web-apps. Built on top of Haxe, Tinkerbell and React.",
+	"contributors": [
+		"jason"
+	],
+	"releasenote": "Under development",
+	"version": "0.0.1",
+	"url": "http://github.com/jasononeil/smalluniverse",
+	"dependencies": {
+		"tink_web": "",
+		"react": ""
+	}
+}
