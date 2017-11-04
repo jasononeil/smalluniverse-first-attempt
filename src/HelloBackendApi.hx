@@ -3,7 +3,7 @@ import asys.io.File;
 #end
 import tink.Json;
 import HelloPage;
-import smalluniverse.BackendApi;
+import smalluniverse.*;
 using tink.CoreApi;
 
 /**
@@ -45,7 +45,7 @@ class HelloBackendApi implements BackendApi<HelloActions, HelloProps> {
 				return File.saveContent('props.json', json);
 			}).map(function (outcome) {
 				outcome.sure();
-				return Done;
+				return BackendApiResult.Done;
 			});
 	}
 }
