@@ -4,12 +4,9 @@ import buddy.*;
 using buddy.Should;
 using tink.CoreApi;
 
-enum Action {
+enum BackendApiTestAction {
 	DoAThing;
 }
-typedef Props = {
-	name: String
-};
 
 /**
 To make things easier for developers, we try to make `BackendApi` classes exist on the client, so
@@ -21,14 +18,14 @@ that no server-side only things (like calls to `Sys.*`) exist on the client.
 This class tests that by putting a `Sys.programPath()` call in each method, and checking it compiles
 okay on the client.
 **/
-class SimpleBackendApi implements BackendApi<Action, Props> {
+class SimpleBackendApi implements BackendApi<BackendApiTestAction, {name: String}> {
 	public function new() {
 		// Note: at this time I can't figure out how to empty the constructor using a macro,
 		// so we're not testing that use case.
 		// Sys.programPath();
 	}
 
-	public function get(context): Promise<Props> {
+	public function get(context): Promise<{name: String}> {
 		Sys.programPath();
 		someInstanceFn();
 		return {
