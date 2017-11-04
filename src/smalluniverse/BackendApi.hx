@@ -2,11 +2,6 @@ package smalluniverse;
 
 import tink.CoreApi;
 
-enum BackendApiResult {
-	Done;
-	Redirect(url:String);
-}
-
 /**
 A backend Api allows you to wire your page up to a backend server.
 
