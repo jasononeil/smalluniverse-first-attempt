@@ -2,7 +2,10 @@
     "version": "0.1.0",
     "command": "haxe",
     "args": [
-        "node.hxml"
+        // "node.hxml",
+        // "client.hxml",
+        // "test-server.hxml",
+        "test-client.hxml",
     ],
     "problemMatcher": {
         "owner": "haxe",
