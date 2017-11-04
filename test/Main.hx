@@ -1,32 +1,20 @@
 import buddy.*;
-using buddy.Should;
+import smalluniverse.*;
 
-class Main implements Buddy<[Tests]> {
-	public function new() {
-	}
-}
+/**
+The entry point for our unit tests.
 
-class Tests extends BuddySuite {
-	public function new() {
-		describe("Using Buddy", {
-			var experience = "?";
-			var mood = "?";
-
-			beforeEach({
-				experience = "great";
-			});
-
-			it("should be a great testing experience", {
-				experience.should.be("great");
-			});
-
-			it("should make the tester really happy", {
-				mood.should.be("happy");
-			});
-
-			afterEach({
-				mood = "happy";
-			});
-		});
-	}
-}
+Buddy will automatically build the appropriate main() function.
+**/
+class Main implements Buddy<[
+	TestBackendApi,
+	TestLazyUniversalPage,
+	TestSmallUniverse,
+	TestSULogMiddleware,
+	TestSUMacro,
+	TestSUServerSideComponent,
+	TestUniversalComponent,
+	TestUniversalElement,
+	TestUniversalPage,
+	TestUniversalPageHead,
+]> {}
