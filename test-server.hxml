@@ -1,0 +1,7 @@
+-lib smalluniverse
+-lib buddy
+-lib hxnodejs
+-cp test
+-D server
+-main Main
+-js www/test-server.js

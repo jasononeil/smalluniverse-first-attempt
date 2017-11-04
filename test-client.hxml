@@ -1,0 +1,6 @@
+-lib smalluniverse
+-lib buddy
+-cp test
+-D client
+-main Main
+-js www/test-client.js
