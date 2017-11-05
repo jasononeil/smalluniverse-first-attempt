@@ -60,7 +60,7 @@ class SUMacro {
 
 		var ast = JsxParser.process(xml);
 		var expr = parseJsxNode(ast, pos);
-		return expr;
+		return macro ($expr: smalluniverse.SUServerSideComponent.SUServerSideNode);
 	}
 
 	static function parseJsxNode(ast:JsxAst, pos:Position)
