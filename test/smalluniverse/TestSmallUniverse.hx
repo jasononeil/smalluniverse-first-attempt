@@ -9,7 +9,7 @@ class TestSmallUniverse extends BuddySuite {
 			it("should correctly set up the page and context in `new()`", {
 			});
 
-			it("should run an action an action= parameter was specified", {
+			it("should run an action if an action= parameter was specified", {
 			});
 
 			it("should redirect after an action if the action requested it", {
