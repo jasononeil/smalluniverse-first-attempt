@@ -23,7 +23,9 @@ class HelloPage extends UniversalPage<HelloActions, HelloProps, {}> {
 
 	public function new(location:String) {
 		super(new HelloBackendApi(location));
-		this.head.addScript('js/react-test.bundle.js');
+		this.head.addScript('js/client.bundle.js');
+		// In development mode, include this "server.bundle.js" stub so it reloads when the server is updated.
+		this.head.addScript('js/server.bundle.js');
 		this.head.setTitle('Hello!');
 	}
 
