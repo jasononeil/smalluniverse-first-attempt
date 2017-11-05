@@ -3,5 +3,6 @@
 -lib hxnodejs
 -cp test
 -D server
+-D buddy-colors
 -main Main
 -js www/test-server.js
