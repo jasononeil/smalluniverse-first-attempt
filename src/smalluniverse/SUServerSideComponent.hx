@@ -7,9 +7,14 @@ import haxe.io.Bytes;
 import tink.CoreApi;
 
 /**
-	A base class for SmallUniverse components - a subset of React components that can be rendered on any Haxe server-side platform.
+A server-side base class for SmallUniverse components.
 
-	It is designed to be mostly compatible with React components, for a subclass to extend either this or React.Component directly, and the code to work seamlessly on either.
+This is a subset of React components that can be rendered on any Haxe server-side platform.
+
+It is designed to be mostly compatible with React components, for a subclass to extend `UniversalComponent`, which will in turn extend either this or React.Component directly, and the code to work seamlessly on either platform.
+
+For internal use only.
+Use `UniversalComponent` when typing components you create.
 **/
 class SUServerSideComponent<TProps, TState> {
 	public var props(default, null):TProps;
@@ -20,88 +25,87 @@ class SUServerSideComponent<TProps, TState> {
 	}
 
 	/**
-		Set the state for the current component.
-		Please note that on a server-side component, the only place the state can be set is during `componentWillMount`.
-		Here the state can be set to either a default value, or a value derived from `this.props`.
+	Set the state for the current component.
+	Please note that on a server-side component, the only place the state can be set is during `componentWillMount`.
+	Here the state can be set to either a default value, or a value derived from `this.props`.
 
-		Please note, currently on the server side setting the state overrides the old state with the new one.
-		This is different to the behaviour with React on the client, where it will partially overwrite the old one, and only change values you specify.
+	Please note, currently on the server side setting the state overrides the old state with the new one.
+	This is different to the behaviour with React on the client, where it will partially overwrite the old one, and only change values you specify.
 	**/
 	public function setState(newState:TState):Void {
 		this.state = newState;
 	}
 
 	/**
-		https://facebook.github.io/react/docs/react-component.html#render
+	https://facebook.github.io/react/docs/react-component.html#render
 	**/
 	public function render():SUServerSideNode {
 		return null;
 	}
 
 	/**
-		React lifecycle hook.
-		This is the only lifecycle hook that will be executed in server-side rendering.
-		See https://facebook.github.io/react/docs/react-component.html#componentwillmount
+	React lifecycle hook.
+	This is the only lifecycle hook that will be executed in server-side rendering.
+	See https://facebook.github.io/react/docs/react-component.html#componentwillmount
 	**/
 	public function componentWillMount():Void {}
 
 	/**
-		React lifecycle hook.
-		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-		See https://facebook.github.io/react/docs/react-component.html#componentdidmount
+	React lifecycle hook.
+	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+	See https://facebook.github.io/react/docs/react-component.html#componentdidmount
 	**/
 	public function componentDidMount():Void {}
 
 	/**
-		React lifecycle hook.
-		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-		See https://facebook.github.io/react/docs/react-component.html#componentwillunmount
+	React lifecycle hook.
+	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+	See https://facebook.github.io/react/docs/react-component.html#componentwillunmount
 	**/
 	public function componentWillUnmount():Void {}
 
 	/**
-		React lifecycle hook.
-		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-		See https://facebook.github.io/react/docs/react-component.html#componentwillreceiveprops
+	React lifecycle hook.
+	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+	See https://facebook.github.io/react/docs/react-component.html#componentwillreceiveprops
 	**/
 	public function componentWillReceiveProps(nextProps:TProps):Void {}
 
 	/**
-		React lifecycle hook.
-		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-		See https://facebook.github.io/react/docs/react-component.html#shouldcomponentupdate
+	React lifecycle hook.
+	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+	See https://facebook.github.io/react/docs/react-component.html#shouldcomponentupdate
 	**/
 	dynamic public function shouldComponentUpdate(nextProps:TProps, nextState:TState):Bool {
 		return true;
 	}
 
 	/**
-		React lifecycle hook.
-		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-		See https://facebook.github.io/react/docs/react-component.html#componentwillupdate
+	React lifecycle hook.
+	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+	See https://facebook.github.io/react/docs/react-component.html#componentwillupdate
 	**/
 	public function componentWillUpdate(nextProps:TProps, nextState:TState):Void {}
 
 	/**
-		React lifecycle hook.
-		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-		See https://facebook.github.io/react/docs/react-component.html#componentdidupdate
+	React lifecycle hook.
+	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+	See https://facebook.github.io/react/docs/react-component.html#componentdidupdate
 	**/
 	public function componentDidUpdate(prevProps:TProps, prevState:TState):Void {}
 }
 
 /**
-	A server-side Virtual-DOM element that is the result of a component rendering.
-	Its only real purpose is to render to a String so we can send HTML to the client.
-**/
-abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
-	inline function new (type:SUServerSideNodeType<Dynamic>) {
-		this = type;
-	}
+A server-side Virtual-DOM element that is the result of a component rendering.
 
-	@:to
-	public inline function toEnum():SUServerSideNodeType<Dynamic> {
-		return this;
+Its only real purpose is to render to a `String` so that we can send HTML to the client.
+
+For internal use only.
+Use `UniversalNode` when typing rendered nodes in your code.
+**/
+abstract SUServerSideNode(SUServerSideNodeType) to SUServerSideNodeType {
+	inline function new (type:SUServerSideNodeType) {
+		this = type;
 	}
 
 	public function renderToString(?onlyChild = false):String {
@@ -110,11 +114,17 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 		}
 		switch this {
 			case Text(str):
-				str = StringTools.htmlEscape(str);
+				if (str == null) {
+					return "";
+				}
+				str = (str != null) ? StringTools.htmlEscape(str) : "";
 				if (onlyChild) {
 					return str;
 				}
-				return '<!-- react-text -->${str}<!-- /react-text -->';
+				// TODO: understand if <!-- react-text --> is ever needed in React 16.
+				// If it is, write a test case covering this.
+				// return '<!-- react-text -->${str}<!-- /react-text -->';
+				return str;
 			case Html(tag, props, children):
 				var openingTag = "",
 					attrsHtml = "",
@@ -138,7 +148,7 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 							}
 							if (tag  == 'textarea') {
 								if (field == 'value' || field == 'defaultValue') {
-									dangerousInnerHtml = value;
+									dangerousInnerHtml = value != null ? StringTools.htmlEscape(value) : null;
 									continue;
 								}
 							}
@@ -148,9 +158,9 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 								for (styleField in Reflect.fields(styleObject)) {
 									var styleValue = Reflect.field(styleObject, styleField);
 									var styleName = transformJsNameToCssName(styleField);
-									styleRules.push('$styleName:$styleValue;');
+									styleRules.push('$styleName: $styleValue;');
 								}
-								value = styleRules.join("");
+								value = styleRules.join(" ");
 							}
 							value = StringTools.htmlEscape(value);
 							if (field == 'className') {
@@ -170,8 +180,8 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 				}
 
 				openingTag = '<$tag';
-				var selfClosingTags = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
-				var selfClosingTag = (selfClosingTags.indexOf(tag) > -1) ? '/>' : '></$tag>';
+				var selfClosingTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+				var selfClosingTag = (selfClosingTags.indexOf(tag) > -1) ? '>' : '></$tag>';
 				var html =
 					openingTag
 					 + attrsHtml
@@ -182,7 +192,7 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 			case Component(component, props, children):
 				// We don't render and markup for the component or it's children directly.
 				// We leave it entirely up to the component to render itself.
-				props.children = fromArray(children);
+				props.children = UniversalNode.fromArray(children);
 				return component.render(props).renderToString();
 			case NodeList(arr):
 				var str = "";
@@ -206,52 +216,42 @@ abstract SUServerSideNode(SUServerSideNodeType<Dynamic>) {
 		return cssName;
 	}
 
-	@:from
-	public static inline function fromString(str:String):SUServerSideNode {
-		return new SUServerSideNode(Text(str));
-	}
-
-	@:from
-	public static inline function fromArray(arr:Array<SUServerSideNode>):SUServerSideNode {
-		return new SUServerSideNode(NodeList(arr));
-	}
-
 	// We need the automatic cast because macros generate `var type:SUServerSideNode = $expr` where we don't know what $expr is.
 	// With two static casts set up we can send whichever value it happens to be and have it correctly set by the Haxe compiler.
 	@:from
-	public static inline function fromEnum(type:SUServerSideNodeType<Dynamic>):SUServerSideNode {
+	static inline function fromEnum(type:SUServerSideNodeType):SUServerSideNode {
 		return new SUServerSideNode(type);
 	}
 
-	public static function createNodeForComponent<TProps>(component:SUServerSideRenderFn<TProps>, props:TProps, children:Array<SUServerSideNode>):SUServerSideNode {
-		var childrenNode = (children.length > 0) ? fromArray(children) : null;
+	static function createNodeForComponent<TProps>(component:SUServerSideRenderFn<TProps>, props:TProps, children:Array<UniversalNode>):SUServerSideNode {
+		var childrenNode = (children.length > 0) ? UniversalNode.fromArray(children) : null;
 		untyped props.children = childrenNode;
 		return SUServerSideNodeType.Component(component, props, children);
 	}
 
-	public static function createNodeForHtml(tagName:String, props:Dynamic, children:Array<SUServerSideNode>):SUServerSideNode {
+	static function createNodeForHtml(tagName:String, props:Dynamic, children:Array<UniversalNode>):SUServerSideNode {
 		return SUServerSideNodeType.Html(tagName, props, children);
 	}
 }
 
 /**
-	An enum describing the different types of nodes - text, html, and sub-components.
+An enum describing the different types of nodes - text, html, sub-components, and node lists (fragments).
 
-	We store our nodes using this representation to make rendering a String easy.
+We store our nodes using this representation to make rendering a String easy.
 
-	Internal use only.
+For internal use only.
 **/
-enum SUServerSideNodeType<TProps> {
+enum SUServerSideNodeType {
 	Text(str:String);
-	Html(tagName:String, props:TProps, children:Array<SUServerSideNode>);
-	Component(component:SUServerSideRenderFn<TProps>, props:TProps, children:Array<SUServerSideNode>);
+	Html(tagName:String, props:Dynamic, children:Array<SUServerSideNode>);
+	Component(component:SUServerSideRenderFn<Dynamic>, props:Dynamic, children:Array<SUServerSideNode>);
 	NodeList(arr:Array<SUServerSideNode>);
 }
 
 /**
-	A helper type that can instantiate a component, whether it is a component class or a pure function.
+A helper type that can instantiate a component, whether it is a component class or a pure function.
 
-	For internal use.
+For internal use only.
 **/
 abstract SUServerSideRenderFn<TProps>(UniversalFunctionalComponent<TProps>) from UniversalFunctionalComponent<TProps> {
 	public function new (fn) {

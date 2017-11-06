@@ -1,5 +1,6 @@
 import smalluniverse.UniversalPage;
 import smalluniverse.UniversalComponent;
+import smalluniverse.UniversalNode;
 import smalluniverse.SUMacro.jsx;
 #if server
 	import sys.io.File;
@@ -29,7 +30,7 @@ class HelloPage extends UniversalPage<HelloActions, HelloProps, {}> {
 		this.head.setTitle('Hello!');
 	}
 
-	override function render():UniversalElement {
+	override function render():UniversalNode {
 		return jsx('<div>
 			<h1 onClick=${clickHeader}>Hello ${this.props.name}</h1>
 			<h2 onClick=${clickHeader2}><em>How does it feel being <strong>${""+this.props.age}</strong> years old?</em></h2>

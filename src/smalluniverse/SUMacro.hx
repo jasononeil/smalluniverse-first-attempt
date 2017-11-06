@@ -60,7 +60,7 @@ class SUMacro {
 
 		var ast = JsxParser.process(xml);
 		var expr = parseJsxNode(ast, pos);
-		return macro ($expr: smalluniverse.SUServerSideComponent.SUServerSideNode);
+		return macro ($expr: smalluniverse.UniversalNode);
 	}
 
 	static function parseJsxNode(ast:JsxAst, pos:Position)
@@ -101,14 +101,14 @@ class SUMacro {
 				// We actually set the children property in SUServerSideNode.createNodeForComponent.
 				// But we need to fake it here so ReactMacro knows it is provided.
 				if (children.length > 0) {
-					attrs.push({field:'children', expr:macro ($a{children}:Array<smalluniverse.SUServerSideComponent.SUServerSideNode>)});
+					attrs.push({field:'children', expr:macro ($a{children}:Array<smalluniverse.UniversalNode>)});
 				}
                 var props = ReactMacro.makeProps(spread, attrs, pos);
 
                 if (isHtml) {
-                    return macro smalluniverse.SUServerSideComponent.SUServerSideNode.createNodeForHtml($type, $props, $a{children});
+                    return macro @:privateAccess smalluniverse.SUServerSideComponent.SUServerSideNode.createNodeForHtml($type, $props, $a{children});
                 } else {
-                    return macro smalluniverse.SUServerSideComponent.SUServerSideNode.createNodeForComponent($type, $props, $a{children});
+                    return macro @:privateAccess smalluniverse.SUServerSideComponent.SUServerSideNode.createNodeForComponent($type, $props, $a{children});
                 }
 		}
 	}

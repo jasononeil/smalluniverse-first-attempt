@@ -6,7 +6,7 @@ package smalluniverse;
 	For the difference between functional components and state components, see:
 	https://facebook.github.io/react/docs/components-and-props.html#functional-and-class-components
 **/
-typedef UniversalFunctionalComponent<TProps> = TProps->UniversalElement;
+typedef UniversalFunctionalComponent<TProps> = TProps->UniversalNode;
 
 /**
 	Components in Small Universe should extend this class.
@@ -25,15 +25,4 @@ class UniversalComponent<TProps, TState> extends UniversalComponentBaseType<TPro
 typedef UniversalComponentBaseType<TProps, TState> =
 	#if (client) react.ReactComponent.ReactComponentOf<TProps, TState, Dynamic>
 	#else SUServerSideComponent<TProps, TState>
-	#end;
-
-/**
-	A virtual-DOM element that is the result of having rendered a component.
-
-	On client-side JS, this points to `ReactElement`.
-	On server-side platforms, this points to `SUServerSideNode`.
-**/
-typedef UniversalElement =
-	#if (client) react.ReactComponent.ReactElement
-	#else SUServerSideComponent.SUServerSideNode
 	#end;

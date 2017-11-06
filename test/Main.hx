@@ -14,7 +14,7 @@ class Main implements Buddy<[
 	TestSUMacro,
 	TestSUServerSideComponent,
 	TestUniversalComponent,
-	TestUniversalElement,
+	TestUniversalNode,
 	TestUniversalPage,
 	TestUniversalPageHead,
 ]> {}
