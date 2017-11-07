@@ -2,5 +2,6 @@
 -lib buddy
 -cp test
 -D client
+-D reporter=BuddyKarmaTestReporter
 -main Main
 -js www/test-client.js

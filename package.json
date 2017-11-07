@@ -6,8 +6,10 @@
   "scripts": {
     "start": "webpack-dev-server --open",
     "server": "cd www && nodemon server.js",
-    "test": "cd www && node test-server.js",
-    "test_watch": "cd www && nodemon test-server.js",
+    "test_server": "cd www && node test-server.js",
+    "test_client": "karma start --singleRun",
+    "test_watch_server": "cd www && nodemon test-server.js",
+    "test_watch_client": "karma start",
     "postinstall": "node node_modules/.bin/lix download"
   },
   "dependencies": {
@@ -20,6 +22,8 @@
     "haxe-loader": "^0.5.0",
     "haxe-modular": "^0.5.0",
     "haxeshim": "^0.9.0",
+    "karma": "^1.7.1",
+    "karma-chrome-launcher": "^2.2.0",
     "less": "^2.7.2",
     "less-loader": "^2.2.3",
     "lix.pm": "^0.10.2",
