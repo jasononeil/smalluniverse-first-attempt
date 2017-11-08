@@ -104,18 +104,12 @@ class BuddyKarmaTestReporter extends TraceReporter {
 	 */
 	override public function done(suites : Iterable<Suite>, status : Bool) : Promise<Iterable<Suite>> {
 		super.done(suites, status);
-		// var names: SpecNames = {},
-		// 	summary = {total: 0, specs: names};
-		// getSuitesSummary(suites, summary);
-
 		js.Browser.console.log('\n' + logs.join('\n'));
-
 		return karmaIsReady.then(function (karma) {
 			karma.info({
 				specs: null,
 				total: specResults.length
 			});
-			// trace('SUMMARY IS', summary);
 			for (result in specResults) {
 				karma.result(result);
 			}
