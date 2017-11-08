@@ -27,6 +27,8 @@ class TestUniversalNode extends BuddySuite {
 
 			it("should cast a String and render text correctly", {
 				renderToString('Hello').should.be('Hello');
+				renderToString(2).should.be('2');
+				renderToString(3.1).should.be('3.1');
 			});
 
 			it("should render a JSX text-only string correctly", {

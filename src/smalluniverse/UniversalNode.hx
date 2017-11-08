@@ -38,13 +38,29 @@ abstract UniversalNode(UniversalNodeBaseType) from UniversalNodeBaseType to Univ
 	This allows you to use a simple string wherever a UniversalNode is expected.
 	**/
 	@:from
-	public static inline function fromString(str:String):UniversalNode {
+	public static inline function fromString(str: String): UniversalNode {
 		#if server
 		@:privateAccess return new SUServerSideNode(Text(str));
 		#elseif client
 		// React is actually okay to receive a String instead of a ReactElement, so use an unsafe cast.
 		return cast str;
 		#end
+	}
+
+	/**
+	Cast an Int into a UniversalNode (it will be treated as a String).
+	**/
+	@:from
+	public static inline function fromInt(int: Int): UniversalNode {
+		return fromString(''+int);
+	}
+
+	/**
+	Cast an Float into a UniversalNode (it will be treated as a String).
+	**/
+	@:from
+	public static inline function fromFloat(float: Float): UniversalNode {
+		return fromString(''+float);
 	}
 
 	/**
