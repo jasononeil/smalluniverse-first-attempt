@@ -13,7 +13,11 @@ typedef UniversalFunctionalComponent<TProps> = TProps->UniversalNode;
 **/
 @:autoBuild(smalluniverse.SUBuildMacro.buildUniversalComponent())
 class UniversalComponent<TProps, TState> extends UniversalComponentBaseType<TProps, TState> {
-
+	#if client
+	override public function render(): UniversalNode {
+		return null;
+	}
+	#end
 }
 
 /**
