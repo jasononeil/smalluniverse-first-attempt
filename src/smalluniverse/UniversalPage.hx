@@ -3,15 +3,12 @@ package smalluniverse;
 #if client
 	import react.ReactDOM;
 	import react.React;
-	import js.html.FormData;
 	import js.Browser.window;
 	import js.Browser.document;
-	import js.Browser.console;
 	import js.html.*;
 #elseif server
 #end
 import smalluniverse.UniversalComponent;
-import tink.Json;
 using tink.CoreApi;
 
 @:autoBuild(smalluniverse.SUBuildMacro.buildUniversalPage())
@@ -105,29 +102,34 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 	/**
 		TODO:
 	**/
-	public static function startClientRendering(cls:Class<Dynamic>, propsJson:String) {
+	public static function startClientRendering(cls:Class<Dynamic>, propsJson:String, ?cb: Void->Void) {
 		var page = Type.createInstance(cls, []);
 		page.props = page.deserializeProps(propsJson);
-		page.doClientRender();
+		page.doClientRender(cb);
 	}
 
-	function doClientRender<TProps>() {
-		#if client
+	function doClientRender(?cb: Void->Void) {
+		// Note: React is smart enough to maintain our instance and not recreate a new one,
+		// even though we are passing in the class and not the instance.
 		var pageCls:Class<react.ReactComponent.ReactComponent> = cast Type.getClass(this),
 			pageElm = React.createElement(pageCls, this.props),
 			container = document.getElementById('small-universe-app');
-		// Note: React is smart enough to maintain our instance and not recreate a new one,
-		// even though we are passing in the class and not the instance.
-
-		ReactDOM.hydrate(pageElm, container);
-		#end
+		if (container == null) {
+			throw new Error('A container with ID small-universe-app was not found, aborting render');
+		}
+		ReactDOM.hydrate(pageElm, container, cb);
 	}
 
-	/**
-		TODO
-	**/
 	function callServerAction(action:Option<TAction>):Promise<Noise> {
-		var request = switch action {
+		var request = getRequestForAction(action);
+		return fetchRequest(request)
+			.next(getResponseText)
+			.next(handleResponseSpecialInstructions)
+			.next(rerenderUsingUpdatedJson);
+	}
+
+	function getRequestForAction(action:Option<TAction>): Request {
+		return switch action {
 			case Some(a):
 				new Request('${window.location.href}?action=${serializeAction(a)}', {
 					method: 'POST',
@@ -142,66 +144,93 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 						'Accept': 'application/json',
 					})
 				});
-		};
+		}
+	}
 
-		return Future
-			.ofJsPromise(window.fetch(request))
-			.asPromise()
-			.next(function (res:Response):Promise<String> {
-				var responseText = Future.ofJsPromise(res.text());
-				if (res.status != 200) {
-					// The text() promise will succeed even if the response is not a 200.
-					// Take a Success() and map it to a Failure()
-					return responseText.map(function (outcome) return switch outcome {
-						case Success(txt):
-							var err;
-							try {
-								var errDetails:{code:Int, message:String} = Json.parse(txt);
-								err = new Error(errDetails.code, errDetails.message);
-							} catch (e:Dynamic) {
-								// If the message wasn't a JSON response with the error, just use the message and HTTP code for the new error.
-								err = new Error(res.status, txt);
-							}
-							Failure(err);
-						default: outcome;
-					});
-				};
-				return responseText;
-			})
-			.next(function (serializedResponse:String):Promise<Option<String>> {
-				try {
-					var response:{
-						__smallUniverse:{
-							redirect:Null<String>,
-							messages:Array<Array<String>>
-						}
-					} = tink.Json.parse(serializedResponse);
-					for (messageValues in response.__smallUniverse.messages) {
-						var console = js.Browser.console,
-							log = console.log,
-							args:Array<Dynamic> = [for (arg in messageValues) haxe.Json.parse(arg)];
-						untyped log.apply(console, args);
-					}
-					if (response.__smallUniverse.redirect != null) {
-						js.Browser.window.location.assign(response.__smallUniverse.redirect);
-						// Fulfill the promise, but do not execute a render.
-						return None;
-					}
-				} catch (e:Dynamic) {
-					// Ignore errors - they're probably just complaining if the field was missing.
-				}
-				return Some(serializedResponse);
-			})
-			.next(function (responseToRender:Option<String>):Promise<Noise> {
-				switch responseToRender {
-					case Some(serializedResponse):
-						this.props = this.deserializeProps(serializedResponse);
-						doClientRender();
-						return Noise;
-					case None:
-						return Noise;
-				}
+	function fetchRequest(req: Request): Promise<Response> {
+		return Future.ofJsPromise(window.fetch(req)).asPromise();
+	}
+
+	/** Check the status of the response and return a Promise for the resulting text content of the response. **/
+	function getResponseText(res:Response):Promise<String> {
+		var responseText = Future.ofJsPromise(res.text());
+		if (res.status != 200) {
+			// The text() promise will succeed even if the response is not a 200.
+			// Take a Success() and map it to a Failure()
+			return responseText.map(function (outcome) return switch outcome {
+				case Success(txt): Failure(new Error(res.status, txt));
+				default: outcome;
 			});
+		};
+		return responseText;
+	}
+
+	/** Handle special instructions (traces and redirects) that were left in the __smallUniverse property of the returned JSON. **/
+	function handleResponseSpecialInstructions(serializedResponse:String):Outcome<Option<String>,Error> {
+		var response: SUApiResponseInstructions = null;
+		try {
+			response = tink.Json.parse(serializedResponse);
+		} catch (err: Error) {
+			return Failure(err);
+		}
+		var instructions = response.__smallUniverse;
+		if (instructions != null) {
+			if (instructions.messages != null) {
+				for (messageValues in instructions.messages) {
+					var args:Array<Dynamic> = [
+						// For each arg, try to parse as JSON, but fall back to a String if it isn't valid JSON.
+						for (arg in messageValues) try haxe.Json.parse(arg) catch (e: Dynamic) arg
+					];
+					logToConsole(args);
+				}
+			}
+			if (instructions.redirect != null) {
+				redirectWindow(instructions.redirect);
+				// Fulfill the promise, but do not execute a render.
+				return Success(None);
+			}
+		}
+		return Success(Some(serializedResponse));
+	}
+
+	function logToConsole(values: Array<Dynamic>) {
+		var console = js.Browser.console,
+			log = console.log;
+		untyped log.apply(console, values);
+	}
+
+	function redirectWindow(newUrl: String) {
+		js.Browser.window.location.assign(newUrl);
+	}
+
+	function rerenderUsingUpdatedJson(responseToRender:Option<String>):Promise<Noise> {
+		switch responseToRender {
+			case Some(serializedResponse):
+				this.props = this.deserializeProps(serializedResponse);
+				return Future.async(function (done) {
+					doClientRender(function () done(Noise));
+				});
+			case None:
+				return Noise;
+		}
 	}
 	#end
 }
+
+/**
+This typedef represents the extra information an API response can pass to the client.
+
+Browsers cannot easily read HTTP headers or other metadata during a `fetch` call, so we've chosen to bundle information in the JSON packet.
+
+- If `redirect` is present, the client will redirect the window to the given URL.
+- If `messages` is present, the client will log the values of each message to the developer console.
+	- Each message is an array of strings to print out. The strings should be valid JSON.
+	- They will be decoded using `haxe.Json.parse` before being logged to the console.
+- If the `__smallUniverse` property is optional and should only be used if there is an instruction from the API.
+**/
+typedef SUApiResponseInstructions = {
+	?__smallUniverse:{
+		?redirect:Null<String>,
+		?messages:Array<Array<String>>
+	}
+};
