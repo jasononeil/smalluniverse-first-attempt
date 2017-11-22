@@ -1,6 +1,5 @@
 package smalluniverse;
 
-import haxe.macro.Context;
 import haxe.macro.Expr;
 using tink.MacroApi;
 
@@ -89,6 +88,10 @@ class SUBuildMacro {
 	}
 
 	static function addCustomSerializeMethods(cb:ClassBuilder) {
+		if (cb.target.superClass.t.toString() != "smalluniverse.UniversalPage") {
+			// Only add these methods on classes that extend UniversalPage directly, not on their subclasses.
+			return;
+		}
 		// Note: we are assuming we are extending UniversalPage<TAction, TProps, TRef>. Which may not be the case.
 		var actionsCT = cb.target.superClass.params[0].toComplex();
 		var propsCT = cb.target.superClass.params[1].toComplex();
@@ -104,7 +107,6 @@ class SUBuildMacro {
 				return try {
 					tink.Json.stringify(value);
 				} catch (e:Dynamic) {
-					trace('Error stringifying JSON: '+e);
 					#if client
 					js.Lib.rethrow();
 					#else
@@ -117,7 +119,6 @@ class SUBuildMacro {
 				return try {
 					tink.Json.parse(json);
 				} catch (e:Dynamic) {
-					trace('Error parsing JSON: '+e);
 					#if client
 					js.Lib.rethrow();
 					#else
