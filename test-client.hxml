@@ -1,6 +1,7 @@
 -lib smalluniverse
 -lib buddy
 -cp test
+-cp src
 -D client
 -D reporter=BuddyKarmaTestReporter
 -main Main

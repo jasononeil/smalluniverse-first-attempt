@@ -2,6 +2,7 @@
 -lib buddy
 -lib hxnodejs
 -cp test
+-cp src
 -D server
 -D buddy-colors
 -main Main
