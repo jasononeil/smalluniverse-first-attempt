@@ -382,6 +382,8 @@ enum MyTestPageActions {
 	GetOlder(?howMuch: Int);
 	SetName(name: String, age: Int);
 	GoToHelpPage;
+	TraceSomething;
+	TraceSomethingAndRedirect;
 }
 
 typedef MyTestPageProps = {
@@ -400,6 +402,7 @@ class MyTestPageBackend implements BackendApi<MyTestPageActions, MyTestPageProps
 
 	public function get(context: SmallUniverseContext): Promise<MyTestPageProps> {
 		getCalled++;
+		// Have some could never possibly run on the client.
 		Sys.cpuTime();
 		return {
 			name: 'Server',
@@ -410,8 +413,19 @@ class MyTestPageBackend implements BackendApi<MyTestPageActions, MyTestPageProps
 	public function processAction(context: SmallUniverseContext, action: MyTestPageActions): Promise<BackendApiResult> {
 		processActionCalled++;
 		if (action.match(GoToHelpPage)) {
-			return BackendApiResult.Redirect('http://help.example.com/');
 		}
+		switch action {
+			case GoToHelpPage:
+				return BackendApiResult.Redirect('http://help.example.com/');
+			case TraceSomething:
+				trace(1, "two", {"three": 3});
+				trace('Action was TraceSomething');
+			case TraceSomethingAndRedirect:
+				trace('Action was TraceSomethingAndRedirect');
+				return BackendApiResult.Redirect('http://zombo.com/');
+			default:
+		}
+		// Have some could never possibly run on the client.
 		Sys.cpuTime();
 		return BackendApiResult.Done;
 	}

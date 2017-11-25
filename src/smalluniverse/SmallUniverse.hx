@@ -4,7 +4,7 @@ package smalluniverse;
 import tink.http.Response;
 import tink.http.Header;
 import tink.Json;
-import smalluniverse.UniversalPage.SUApiResponseInstructions;
+import haxe.PosInfos;
 #elseif client
 import js.Browser.document;
 #end
@@ -24,18 +24,45 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 	#end
 
 	#if server
+	static var logs: Array<Array<String>> = [];
+	public static function captureTraces() {
+		haxe.Log.trace = function(v:Dynamic, ?pos:PosInfos) {
+			var arr:Array<Dynamic> = [];
+			arr.push('%c${pos.className}.${pos.methodName}():${pos.lineNumber}');
+			arr.push("background: #222; color: white");
+			arr.push(v);
+			if (pos.customParams != null) {
+				for (arg in pos.customParams) {
+					arr.push(arg);
+				}
+			}
+			var stringArray = arr.map(function (val) return haxe.Json.stringify(val));
+			logs.push(stringArray);
+		};
+	}
+
+	static function getMessages(): Null<Array<Array<String>>> {
+		if (logs.length > 0) {
+			var toReturn = logs;
+			logs = [];
+			return toReturn;
+		}
+		return null;
+	}
+
 	/**
-		The template to use for rendering basic page markup server side.
+	The template to use for rendering basic page markup server side.
 
-		The default should be sufficient for most use cases.
+	The default should be sufficient for most use cases.
 
-		Use `{BODY}`, `{HEAD}`, `{PAGE}` and `{PROPS}` literals as insertion points.
+	Use `{BODY}`, `{HEAD}`, `{PAGE}`, `{PROPS}` and `{LOGS}` strings as insertion points.
 	**/
 	static var template:String = '<html>
 		<head>{HEAD}</head>
 		<body>
 			<div id="small-universe-app">{BODY}</div>
 			<script id="small-universe-props" type="text/json" data-page="{PAGE}">{PROPS}</script>
+			{LOGS}
 		</body>
 	</html>';
 
@@ -96,7 +123,8 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 	function renderJsonRedirect(url: String): OutgoingResponse {
 		var instructions: SUApiResponseInstructions = {
 			__smallUniverse: {
-				redirect: url
+				redirect: url,
+				messages: getMessages()
 			}
 		};
 		return new OutgoingResponse(
@@ -124,6 +152,16 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 
 	function prepareJsonResponse(): Promise<OutgoingResponse> {
 		return this.getPageJson().next(function (pageJson) {
+			var logs = getMessages();
+			if (logs != null) {
+				// Please note we have to use haxe.Json instead of tink.Json.
+				// The reason is that tink.Json will ignore any fields it isn't expecting when parsing, and we want to preserve all data.
+				var responseData: SUApiResponseInstructions = haxe.Json.parse(pageJson);
+				responseData.__smallUniverse = {
+					messages: logs
+				};
+				pageJson = haxe.Json.stringify(responseData);
+			}
 			return new OutgoingResponse(
 				header(200, 'application/json'),
 				pageJson
@@ -140,17 +178,40 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 			var propsJson = @:privateAccess this.serializeProps(this.props);
 			var pageName = Type.getClassName(Type.getClass(this));
 			var head = this.head.renderToString();
+
+			var logScripts = prepareLogScript(getMessages());
+
 			var html = SmallUniverse.template;
 			html = StringTools.replace(html, '{BODY}', pageHtml);
 			html = StringTools.replace(html, '{HEAD}', head);
 			html = StringTools.replace(html, '{PAGE}', pageName);
 			html = StringTools.replace(html, '{PROPS}', propsJson);
+			html = StringTools.replace(html, '{LOGS}', logScripts);
 
 			return new OutgoingResponse(
 				header(200, 'text/html'),
 				html
 			);
 		});
+	}
+
+	function prepareLogScript(logs: Array<Array<String>>) {
+		if (logs == null) {
+			return "";
+		}
+		var script = '\n<script>';
+		for (log in logs) {
+			var args = log.map(function (arg) {
+				// When parsing this to the browser, the `\` escaping is meant for the JSON parser, not the JS parser.
+				// Which means we have to double escape, replacing `\"` with `\\"`.
+				var backslash = '\\';
+				var escapedArg = StringTools.replace(arg, backslash, backslash+backslash);
+				return 'JSON.parse(\'$escapedArg\')';
+			}).join(", ");
+			script += '\nconsole.log($args);';
+		}
+		script += '\n</script>';
+		return script;
 	}
 	#end
 }

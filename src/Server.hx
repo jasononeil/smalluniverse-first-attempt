@@ -10,6 +10,8 @@ import smalluniverse.SmallUniverse;
 
 class Server {
     static function main() {
+        SmallUniverse.captureTraces();
+
         var container = new NodeContainer(8080);
         var router = new Router<Root>(new Root());
 		var handler:Handler = function(req) {

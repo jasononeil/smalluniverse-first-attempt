@@ -10,7 +10,6 @@ class Main implements Buddy<[
 	TestBackendApi,
 	TestLazyUniversalPage,
 	TestSmallUniverse,
-	TestSULogMiddleware,
 	TestSUMacro,
 	TestSUServerSideComponent,
 	TestUniversalComponent,

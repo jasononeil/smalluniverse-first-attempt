@@ -12,6 +12,7 @@ import js.Browser.document;
 #end
 import buddy.*;
 import smalluniverse.TestUniversalPage;
+import tink.Json;
 using buddy.Should;
 using tink.CoreApi;
 using tink.io.Source;
@@ -117,7 +118,101 @@ class TestSmallUniverse extends BuddySuite {
 					}).handle(done);
 				});
 			});
+
+			describe("SmallUniverse.captureTraces()", {
+				var oldTrace = haxe.Log.trace;
+
+				beforeEach(function () {
+					SmallUniverse.captureTraces();
+				});
+
+				afterEach(function () {
+					haxe.Log.trace = oldTrace;
+				});
+
+				describe('on text/html requests', {
+					it("Should not add any scripts if no logs are given", function (done) {
+						var context = getContext(GET, '/', 'text/html');
+						expectBody(context, 'text/html', function (body) {
+							body.should.contain('Server: 30');
+							body.should.not.contain('console.log');
+						}).handle(done);
+					});
+					it("Should correctly log using inline scripts, but not on a redirect", function (done) {
+						function logsInBuffer() {
+							return @:privateAccess SmallUniverse.logs.length;
+						}
+
+						logsInBuffer().should.be(0);
+
+						// The action will trace some things, but return a redirect.
+						var doActionContext = getContext(POST, '/?action="TraceSomething"', 'text/html');
+
+						expectRedirect(doActionContext, '/')
+							.next(function (_) {
+								// Check that the logs are sitting in the buffer.
+								logsInBuffer().should.be(2);
+								return Noise;
+							})
+							.next(function (_) {
+								var renderPageContext = getContext(GET, '/', 'text/html');
+								return expectBody(renderPageContext, 'text/html', function (body) {
+									body.should.contain('<p class="">Server: 30.</p>');
+									body.should.contain('console.log');
+									body.should.contain('smalluniverse.MyTestPageBackend.processAction()');
+									body.should.contain('1');
+									body.should.contain('"two"');
+									body.should.contain('{"three":3}');
+									body.should.contain('"Action was TraceSomething"');
+								});
+							})
+							.next(function (_) {
+								// Check that the logs are no longer in the buffer.
+								logsInBuffer().should.be(0);
+								return Noise;
+							})
+							.handle(done);
+					});
+				});
+
+				describe('on application/json requests', {
+					it("Should not add any JSON instruction in no logs are given on application/json", function (done) {
+						var context = getContext(POST, '/?action="TransformToUpper"', 'application/json');
+						expectBody(context, 'application/json', function (body) {
+							body.should.be('{"age":30,"isAStudent":null,"name":"Server"}');
+						}).handle(done);
+					});
+					it("Should correctly add a JSON instruction for application/json requests", function (done) {
+						var context = getContext(POST, '/?action="TraceSomething"', 'application/json');
+						expectBody(context, 'application/json', function (body) {
+							var instructions: SUApiResponseInstructions = Json.parse(body);
+							var data: MyTestPageProps = Json.parse(body);
+							data.age.should.be(30);
+							data.isAStudent.should.be(null);
+							data.name.should.be('Server');
+							instructions.__smallUniverse.messages.length.should.be(2);
+							instructions.__smallUniverse.messages[0][0].should.contain("smalluniverse.MyTestPageBackend.processAction()");
+							instructions.__smallUniverse.messages[0][2].should.be("1");
+							instructions.__smallUniverse.messages[0][3].should.be('"two"');
+							instructions.__smallUniverse.messages[0][4].should.be('{"three":3}');
+							instructions.__smallUniverse.messages[1][0].should.contain("smalluniverse.MyTestPageBackend.processAction()");
+							instructions.__smallUniverse.messages[1][2].should.be('"Action was TraceSomething"');
+						}).handle(done);
+					});
+					it("Should correctly add a JSON instruction even on redirects", function (done) {
+						var context = getContext(POST, '/?action="TraceSomethingAndRedirect"', 'application/json');
+						expectBody(context, 'application/json', function (body) {
+							var instructions: SUApiResponseInstructions = Json.parse(body);
+							instructions.__smallUniverse.messages.length.should.be(1);
+							instructions.__smallUniverse.messages[0][0].should.contain("smalluniverse.MyTestPageBackend.processAction()");
+							instructions.__smallUniverse.messages[0][2].should.be('"Action was TraceSomethingAndRedirect"');
+							instructions.__smallUniverse.redirect.should.be('http://zombo.com/');
+						}).handle(done);
+					});
+				});
+			});
 		});
+
 		#end
 
 		#if client
