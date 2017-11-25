@@ -108,6 +108,7 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		if (container == null) {
 			throw new Error('A container with ID small-universe-app was not found, aborting render');
 		}
+		this.head.syncHeadToDocument();
 		ReactDOM.hydrate(pageElm, container, cb);
 	}
 
