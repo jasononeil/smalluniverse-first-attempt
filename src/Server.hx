@@ -4,8 +4,6 @@ import tink.http.Handler;
 import tink.web.routing.*;
 import tink.http.middleware.Static;
 import tink.http.Response.OutgoingResponse;
-// import monsoon.Monsoon;
-// import monsoon.middleware.Static;
 import smalluniverse.SmallUniverse;
 
 class Server {
@@ -36,15 +34,13 @@ class Server {
 class Root {
     public function new() {}
 
-	@:get
+	@:all('/about')
 	public function about(context: Context) {
 		return new SmallUniverse(new AboutPage(), context);
 	}
 
-    @:get('/')
-    @:get('/$location')
-    @:post('/')
-    @:post('/$location')
+    @:all('/')
+    @:all('/$location')
     public function hello(context: Context, location = 'World') {
 		return new SmallUniverse(new HelloPage(location), context);
 	}
