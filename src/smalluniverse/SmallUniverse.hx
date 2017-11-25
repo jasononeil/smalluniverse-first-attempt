@@ -1,11 +1,29 @@
 package smalluniverse;
 
+#if server
 import tink.http.Response;
 import tink.http.Header;
-import smalluniverse.BackendApi;
+import tink.Json;
+import smalluniverse.UniversalPage.SUApiResponseInstructions;
+#elseif client
+import js.Browser.document;
+#end
 using tink.CoreApi;
 
 abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
+	#if client
+	public static function hydrate(pageCls:Class<Dynamic>): Promise<Noise> {
+		var propsElem = document.getElementById('small-universe-props');
+		var propsJson = propsElem.innerText;
+		var page = Type.createInstance(pageCls, []);
+		page.props = page.deserializeProps(propsJson);
+		return Future.async(function (done) {
+			page.doClientRender(function () done(Noise));
+		});
+	}
+	#end
+
+	#if server
 	/**
 		The template to use for rendering basic page markup server side.
 
@@ -21,7 +39,7 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 		</body>
 	</html>';
 
-	public function new(context: SmallUniverseContext, pageToUse:LazyUniversalPage) {
+	public function new(pageToUse:LazyUniversalPage, context: SmallUniverseContext) {
 		var page = pageToUse();
 		@:privateAccess page.context = context;
 		this = page;
@@ -34,7 +52,9 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 				case Redirect(url):
 					return prepareRedirect(url);
 				case Done:
-					return renderPage();
+					// If it's JSON, we return the props directly.
+					// If it's HTML, we want to redirect, so that if they refresh the page it doesn't repeat the action.
+					return isApiRequest() ? prepareJsonResponse() : prepareRedirectToSamePage();
 			});
 		}
 		return renderPage();
@@ -46,9 +66,48 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 		return this.backendApi.processAction(this.context, action);
 	}
 
+	function isApiRequest(): Bool {
+		return !this.context.accepts('text/html');
+	}
+
 	function prepareRedirect(url: String): OutgoingResponse {
+		return isApiRequest() ? renderJsonRedirect(url) : doHttpRedirect(url);
+	}
+
+	function prepareRedirectToSamePage(): OutgoingResponse {
+		// Create a copy of the URL, except with the `action=` parameter missing.
+		var url: tink.Url = this.context.header.url,
+			currentQuery = url.query.toMap(),
+			newQuery = tink.url.Query.build();
+		for (key in currentQuery.keys()) {
+			if (key != 'action') {
+				newQuery.add(key, currentQuery[key]);
+			}
+		}
+		var queryString = newQuery.toString();
+		var redirectUrl = url.resolve(tink.Url.make({
+			path: url.path,
+			query: (queryString != "") ? queryString : null,
+			hash: url.hash
+		})).toString();
+		return prepareRedirect(redirectUrl);
+	}
+
+	function renderJsonRedirect(url: String): OutgoingResponse {
+		var instructions: SUApiResponseInstructions = {
+			__smallUniverse: {
+				redirect: url
+			}
+		};
 		return new OutgoingResponse(
-			new ResponseHeader(301, 301, [
+			header(200, 'application/json'),
+			Json.stringify(instructions)
+		);
+	}
+
+	function doHttpRedirect(url: String): OutgoingResponse {
+		return new OutgoingResponse(
+			new ResponseHeader(TemporaryRedirect, 307, [
 				new HeaderField('Location', url)
 			]),
 			""
@@ -56,8 +115,7 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 	}
 
 	function renderPage(): Promise<OutgoingResponse> {
-		var isApiRequest = !this.context.accepts('text/html');
-		if (isApiRequest) {
+		if (isApiRequest()) {
 			return prepareJsonResponse();
 		} else {
 			return prepareHtmlResponse();
@@ -94,4 +152,5 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 			);
 		});
 	}
+	#end
 }

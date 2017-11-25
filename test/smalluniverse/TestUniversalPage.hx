@@ -211,23 +211,6 @@ class TestUniversalPage extends BuddySuite {
 				});
 			});
 			#end
-
-			#if client
-			it("Should correctly render when startClientRendering is called", function (done) {
-				UniversalPage.startClientRendering(
-					MyTestPage,
-					'{
-						"name": "ClientRender",
-						"age": 30
-					}',
-					function () {
-						var container = document.getElementById('small-universe-app');
-						container.innerHTML.should.be('<p class="">ClientRender: 30.</p>');
-						done();
-					}
-				);
-			});
-			#end
 		});
 
 		#if client
@@ -398,6 +381,7 @@ enum MyTestPageActions {
 	TransformToUpper;
 	GetOlder(?howMuch: Int);
 	SetName(name: String, age: Int);
+	GoToHelpPage;
 }
 
 typedef MyTestPageProps = {
@@ -425,6 +409,9 @@ class MyTestPageBackend implements BackendApi<MyTestPageActions, MyTestPageProps
 
 	public function processAction(context: SmallUniverseContext, action: MyTestPageActions): Promise<BackendApiResult> {
 		processActionCalled++;
+		if (action.match(GoToHelpPage)) {
+			return BackendApiResult.Redirect('http://help.example.com/');
+		}
 		Sys.cpuTime();
 		return BackendApiResult.Done;
 	}

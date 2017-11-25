@@ -36,7 +36,7 @@ class Root {
 
 	@:get
 	public function about(context: Context) {
-		return new SmallUniverse(context, new AboutPage());
+		return new SmallUniverse(new AboutPage(), context);
 	}
 
     @:get('/')
@@ -44,6 +44,6 @@ class Root {
     @:post('/')
     @:post('/$location')
     public function hello(context: Context, location = 'World') {
-		return new SmallUniverse(context, new HelloPage(location));
+		return new SmallUniverse(new HelloPage(location), context);
 	}
 }

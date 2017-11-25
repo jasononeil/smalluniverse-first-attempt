@@ -99,15 +99,6 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		return callServerAction(Some(action));
 	}
 
-	/**
-		TODO:
-	**/
-	public static function startClientRendering(cls:Class<Dynamic>, propsJson:String, ?cb: Void->Void) {
-		var page = Type.createInstance(cls, []);
-		page.props = page.deserializeProps(propsJson);
-		page.doClientRender(cb);
-	}
-
 	function doClientRender(?cb: Void->Void) {
 		// Note: React is smart enough to maintain our instance and not recreate a new one,
 		// even though we are passing in the class and not the instance.
