@@ -20,9 +20,7 @@ okay on the client.
 **/
 class SimpleBackendApi implements BackendApi<BackendApiTestAction, {name: String}> {
 	public function new() {
-		// Note: at this time I can't figure out how to empty the constructor using a macro,
-		// so we're not testing that use case.
-		// Sys.programPath();
+		Sys.programPath();
 	}
 
 	public function get(context): Promise<{name: String}> {

@@ -24,7 +24,8 @@ class SUBuildMacro {
 		return ClassBuilder.run([
 			#if client
 				emptyAllMethodsExcept(['get', 'processAction']),
-				emptyMethodBodies
+				emptyMethodBodies,
+				emptyConstructor,
 			#end
 		]);
 	}
@@ -84,6 +85,24 @@ class SUBuildMacro {
 				} else {
 					member.kind = FProp(get, set, t, macro null);
 				}
+		}
+	}
+
+	static function emptyConstructor(cb: ClassBuilder): Void {
+		if (cb.hasConstructor()) {
+			var constructor = cb.getConstructor();
+			constructor.onGenerate(function (fn) {
+				fn.args = [for (a in fn.args) {
+					name: '_',
+					opt: true,
+					type: null,
+					value: null
+				}];
+				fn.params = null;
+				fn.expr =
+					if (cb.target.superClass != null) macro super()
+					else macro {};
+			});
 		}
 	}
 
