@@ -117,14 +117,7 @@ abstract SUServerSideNode(SUServerSideNodeType) to SUServerSideNodeType {
 				if (str == null) {
 					return "";
 				}
-				str = (str != null) ? StringTools.htmlEscape(str) : "";
-				if (onlyChild) {
-					return str;
-				}
-				// TODO: understand if <!-- react-text --> is ever needed in React 16.
-				// If it is, write a test case covering this.
-				// return '<!-- react-text -->${str}<!-- /react-text -->';
-				return str;
+				return StringTools.htmlEscape(Std.string(str));
 			case Html(tag, props, children):
 				var openingTag = "",
 					attrsHtml = "",
