@@ -16,9 +16,19 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 		var propsElem = document.getElementById('small-universe-props');
 		var propsJson = propsElem.innerText;
 		var page = Type.createInstance(pageCls, []);
-		page.props = page.deserializeProps(propsJson);
-		return Future.async(function (done) {
-			page.doClientRender(function () done(Noise));
+		try {
+			page.props = page.deserializeProps(propsJson);
+		} catch (e: Dynamic) {
+			trace('Failed to deserialize props', e);
+			return new Error('Failed to deserialize props: $e');
+		}
+		return Future.async(function (done: Outcome<Noise, Error>->Void) {
+			try {
+				page.doClientRender(function () done(Success(Noise)));
+			} catch (e: Dynamic) {
+				trace('Failed to render page', e);
+				done(Failure(new Error('Failed to render page: $e')));
+			}
 		});
 	}
 	#end
