@@ -9,7 +9,7 @@ import js.html.*;
 // you just include a `<UniversalPageHead><title>Something</title></UniversalPageHead>` somewhere.
 class UniversalPageHead {
 	var title = "";
-	var links:Array<{rel: String, href: String}> = [];
+	var links:Array<{rel: String, href: String, ?type: String, ?title: String}> = [];
 	var scripts:Array<{src: String, async: Bool}> = [];
 	var meta:Array<{name: String, content: String}> = [];
 
@@ -29,8 +29,8 @@ class UniversalPageHead {
 		return addLink('stylesheet', url);
 	}
 
-	public function addLink(rel: String, href: String) {
-		links.push({rel: rel, href: href});
+	public function addLink(rel: String, href: String, ?type: String, ?title: String) {
+		links.push({rel: rel, href: href, type: type, title: title});
 		return this;
 	}
 
@@ -42,10 +42,16 @@ class UniversalPageHead {
 	public function renderToString() {
 		var titleMarkup = '<title>$title</title>';
 		var metaMarkup = [for (m in meta) '<meta name="${m.name}" content="${m.content}" />'].join("\n");
-		var linkMarkup = [for (l in links) '<link rel="${l.rel}" href="${l.href}" />'].join("\n");
+		var linkMarkup = [for (l in links) renderLink(l)].join("\n");
 		var scriptMarkup = [for (s in scripts) '<script src="${s.src}"${s.async ? ' async' : ''}></script>'].join("\n");
 
 		return titleMarkup + '\n' + metaMarkup + '\n' + linkMarkup + '\n' + scriptMarkup;
+	}
+
+	static function renderLink(l) {
+		var type = (l.type != null) ? 'type="${l.type}" ' : '';
+		var title = (l.title != null) ? 'title="${l.title}" ' : '';
+		return '<link rel="${l.rel}" href="${l.href}" ${type}${title}/>';
 	}
 
 	#if client
@@ -78,6 +84,8 @@ class UniversalPageHead {
 			var elm = document.createLinkElement();
 			elm.rel = l.rel;
 			elm.href = l.href;
+			elm.type = l.type;
+			elm.title = l.title;
 			elm;
 		}];
 		reconcileElements(head, 'link', linkElms, attrsMatch.bind(['rel', 'href']));
