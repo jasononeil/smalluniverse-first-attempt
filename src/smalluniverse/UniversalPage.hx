@@ -123,11 +123,15 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 	function getRequestForAction(action:Option<TAction>): Request {
 		return switch action {
 			case Some(a):
-				new Request('${window.location.href}?action=${serializeAction(a)}', {
+				var body = haxe.Json.stringify({
+					action: serializeAction(a)
+				});
+				new Request(window.location.href, {
 					method: 'POST',
 					headers: new Headers({
 						'Accept': 'application/json',
 					}),
+					body: body
 				});
 			case None:
 				new Request(window.location.href, {

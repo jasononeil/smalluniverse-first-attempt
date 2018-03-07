@@ -84,23 +84,39 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 
 	@:to
 	public function render(): Promise<OutgoingResponse> {
-		if (this.context.hasParam('action')) {
-			return processAction().next(function (result): Promise<OutgoingResponse> switch result {
-				case Redirect(url):
-					return prepareRedirect(url);
-				case Done:
-					// If it's JSON, we return the props directly.
-					// If it's HTML, we want to redirect, so that if they refresh the page it doesn't repeat the action.
-					return isApiRequest() ? prepareJsonResponse() : prepareRedirectToSamePage();
-			});
-		}
-		return renderPage();
+		return this.context.parse().next(function (fields): Promise<OutgoingResponse> {
+			var actionJson = null;
+			if (this.context.hasParam('action')) {
+				actionJson = this.context.param('action');
+			} else if (fields.length > 0) {
+				// TODO: understand why context.parse() is returning a single field name containing all the JSON or multipart data.
+				var json = fields[0].name;
+				var request: {action: String} = haxe.Json.parse(json);
+				actionJson = request.action;
+			}
+
+			if (actionJson != null) {
+				return processAction(actionJson).next(function (result): Promise<OutgoingResponse> switch result {
+					case Redirect(url):
+						return prepareRedirect(this, url);
+					case Done:
+						// If it's JSON, we return the props directly.
+						// If it's HTML, we want to redirect, so that if they refresh the page it doesn't repeat the action.
+						return isApiRequest(this) ? prepareJsonResponse(this) : prepareRedirectToSamePage(this);
+				});
+			}
+			return renderPage();
+		});
 	}
 
-	function processAction(): Promise<BackendApiResult> {
-		var actionJson = this.context.param('action');
-		var action = @:privateAccess this.deserializeAction(actionJson);
-		return this.backendApi.processAction(this.context, action);
+	function processAction(actionJson: String): Promise<BackendApiResult> {
+		try {
+			var action = @:privateAccess this.deserializeAction(actionJson);
+			return this.backendApi.processAction(this.context, action);
+		} catch (e: Dynamic) {
+			trace('Failed to deserialise the JSON for the requested JSON', e);
+			return new Error('Failed to deserialise the JSON for the requested JSON: $e');
+		}
 	}
 
 	function isApiRequest(): Bool {

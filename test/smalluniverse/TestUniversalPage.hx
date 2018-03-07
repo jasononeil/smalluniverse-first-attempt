@@ -243,12 +243,20 @@ class TestUniversalPage extends BuddySuite {
 					req2.method.should.be('POST');
 				});
 
-				it("should have an action= parameter if there is an action", {
+				it("should not have an action= parameter if there is an action", function (done) {
 					var req1 = @:privateAccess page.getRequestForAction(None);
-					req1.url.should.not.contain('action=');
+					req1.text().then(function (text) {
+						(text: String).should.be('');
+						done();
+					});
+				});
 
+				it("should have an action= parameter if there is an action", function (done) {
 					var req2 = @:privateAccess page.getRequestForAction(Some(TransformToUpper));
-					req2.url.should.contain('action=%22TransformToUpper%22');
+					req2.json().then(function (body) {
+						(body.action: String).should.be('"TransformToUpper"');
+						done();
+					});
 				});
 			});
 
@@ -349,24 +357,27 @@ class TestUniversalPage extends BuddySuite {
 				promise.handle(function (outcome) switch outcome {
 					case Success(Noise):
 						trace('Made it to resolve');
-						// The request should be a POST (action).
-						page.interceptedRequest.method.should.be('POST');
-						page.interceptedRequest.url.should.contain('action=%22TransformToUpper%22');
-						// The props should be correctly deserialised and set.
-						page.props.name.should.be('ANNA');
-						page.props.age.should.be(27);
-						page.props.isAStudent.should.be(true);
+						page.interceptedRequest.json().then(function (body) {
+							// The request should be a POST (action).
+							page.interceptedRequest.method.should.be('POST');
+							(body.action: String).should.be('"TransformToUpper"');
 
-						// The console logs should have happened.
-						page.logs.length.should.be(2);
-						page.logs[0].should.be('Log 1, 1');
-						page.logs[1].should.be('Log 2, 2');
+							// The props should be correctly deserialised and set.
+							page.props.name.should.be('ANNA');
+							page.props.age.should.be(27);
+							page.props.isAStudent.should.be(true);
 
-						// The render should be live.
-						var p = document.querySelector('.is-student');
-						p.should.not.be(null);
-						p.innerText.should.be('ANNA: 27.');
-						done();
+							// The console logs should have happened.
+							page.logs.length.should.be(2);
+							page.logs[0].should.be('Log 1, 1');
+							page.logs[1].should.be('Log 2, 2');
+
+							// The render should be live.
+							var p = document.querySelector('.is-student');
+							p.should.not.be(null);
+							p.innerText.should.be('ANNA: 27.');
+							done();
+						});
 					case Failure(err):
 						fail('Expected request to succeed but it failed:' + err.toString());
 						done();
