@@ -47,6 +47,9 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 				}
 			}
 			var stringArray = arr.map(function (val) return haxe.Json.stringify(val));
+			#if hxnodejs
+			js.Node.console.log('%c${pos.className}.${pos.methodName}():${pos.lineNumber}', v, pos.customParams);
+			#end
 			logs.push(stringArray);
 		};
 	}
@@ -89,8 +92,14 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 			if (this.context.hasParam('action')) {
 				actionJson = this.context.param('action');
 			} else if (fields.length > 0) {
-				// TODO: understand why context.parse() is returning a single field name containing all the JSON or multipart data.
-				var json = fields[0].name;
+				// TODO: understand why context.parse() is treating the JSON as key/value pairs, and see if we can clean up this hack.
+				var json = "";
+				for (field in fields) {
+					json += field.name;
+					if (field.value != null && field.value != "") {
+						json += "=" + field.value;
+					}
+				}
 				var request: {action: String} = haxe.Json.parse(json);
 				actionJson = request.action;
 			}
