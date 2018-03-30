@@ -10,5 +10,6 @@ www/index.php
 www/js
 www/react-test.haxe.js
 www/server.js
+www/server.js.map
 www/test-server.js
 www/test-client.js

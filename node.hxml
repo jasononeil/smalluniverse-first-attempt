@@ -9,3 +9,4 @@
 -cp src
 -main Server
 -js www/server.js
+-debug
