@@ -47,8 +47,17 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 				}
 			}
 			var stringArray = arr.map(function (val) return haxe.Json.stringify(val));
+
 			#if hxnodejs
-			js.Node.console.log('%c${pos.className}.${pos.methodName}():${pos.lineNumber}', v, pos.customParams);
+			// Also log to the server console.
+			var className = pos.className.substr(pos.className.lastIndexOf('.') + 1),
+				params = [v],
+				resetColor = "\x1b[0m",
+				dimColor = "\x1b[2m";
+			if (pos.customParams != null) {
+				for (p in pos.customParams) params.push(p);
+			}
+			js.Node.console.log('${dimColor}${className}.${pos.methodName}():${pos.lineNumber}:${resetColor} ${params.join(" ")}');
 			#end
 			logs.push(stringArray);
 		};
