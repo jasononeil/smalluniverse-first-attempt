@@ -141,9 +141,13 @@ abstract SUServerSideNode(SUServerSideNodeType) to SUServerSideNodeType {
 							}
 							if (tag  == 'textarea') {
 								if (field == 'value' || field == 'defaultValue') {
-									dangerousInnerHtml = value != null ? StringTools.htmlEscape(value) : null;
+									dangerousInnerHtml = value != null ? StringTools.htmlEscape(Std.string(value)) : null;
 									continue;
 								}
+							}
+							if (value == null) {
+								// All attributes after this point can be safely ignored if they're null.
+								continue;
 							}
 							if (field == 'style') {
 								var styleObject:Dynamic<String> = value;
@@ -155,9 +159,15 @@ abstract SUServerSideNode(SUServerSideNodeType) to SUServerSideNodeType {
 								}
 								value = styleRules.join(" ");
 							}
-							value = StringTools.htmlEscape(value);
+							value = StringTools.htmlEscape(Std.string(value));
 							if (field == 'className') {
 								field = 'class';
+							}
+							if (tag == 'input' && field == 'defaultValue') {
+								field = value;
+							}
+							if (field == 'htmlFor') {
+								field = 'for';
 							}
 							attrsHtml += ' $field="$value"';
 						}
