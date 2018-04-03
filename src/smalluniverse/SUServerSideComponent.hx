@@ -164,7 +164,7 @@ abstract SUServerSideNode(SUServerSideNodeType) to SUServerSideNodeType {
 								field = 'class';
 							}
 							if (tag == 'input' && field == 'defaultValue') {
-								field = value;
+								field = 'value';
 							}
 							if (field == 'htmlFor') {
 								field = 'for';
