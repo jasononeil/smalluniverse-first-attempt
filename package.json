@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --open",
-    "server": "cd www && nodemon server.js",
+    "server": "cd www && nodemon --watch server.js server.js",
     "test_server": "cd www && node test-server.js",
     "test_client": "karma start --singleRun",
     "test_watch_server": "cd www && nodemon test-server.js",
