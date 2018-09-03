@@ -4,18 +4,19 @@ import js.Browser.document;
 
 class Client {
 	static function main() {
-		onReady(function () {
+		onReady(function() {
 			var propsElem = document.getElementById('small-universe-props');
 			switch propsElem.getAttribute('data-page') {
 				case 'AboutPage':
 					SmallUniverse.hydrate(AboutPage);
-					// Webpack.load(AboutPage).then(function () {
-					// });
+				// Webpack.load(AboutPage).then(function () {
+				// });
 				case 'HelloPage':
 					SmallUniverse.hydrate(HelloPage);
-					// Webpack.load(HelloPage).then(function () {
-					// });
-				default: null;
+				// Webpack.load(HelloPage).then(function () {
+				// });
+				default:
+					null;
 			}
 		});
 	}

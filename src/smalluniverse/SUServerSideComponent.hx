@@ -7,14 +7,14 @@ import haxe.io.Bytes;
 import tink.CoreApi;
 
 /**
-A server-side base class for SmallUniverse components.
+	A server-side base class for SmallUniverse components.
 
-This is a subset of React components that can be rendered on any Haxe server-side platform.
+	This is a subset of React components that can be rendered on any Haxe server-side platform.
 
-It is designed to be mostly compatible with React components, for a subclass to extend `UniversalComponent`, which will in turn extend either this or React.Component directly, and the code to work seamlessly on either platform.
+	It is designed to be mostly compatible with React components, for a subclass to extend `UniversalComponent`, which will in turn extend either this or React.Component directly, and the code to work seamlessly on either platform.
 
-For internal use only.
-Use `UniversalComponent` when typing components you create.
+	For internal use only.
+	Use `UniversalComponent` when typing components you create.
 **/
 class SUServerSideComponent<TProps, TState> {
 	public var props(default, null):TProps;
@@ -25,86 +25,86 @@ class SUServerSideComponent<TProps, TState> {
 	}
 
 	/**
-	Set the state for the current component.
-	Please note that on a server-side component, the only place the state can be set is during `componentWillMount`.
-	Here the state can be set to either a default value, or a value derived from `this.props`.
+		Set the state for the current component.
+		Please note that on a server-side component, the only place the state can be set is during `componentWillMount`.
+		Here the state can be set to either a default value, or a value derived from `this.props`.
 
-	Please note, currently on the server side setting the state overrides the old state with the new one.
-	This is different to the behaviour with React on the client, where it will partially overwrite the old one, and only change values you specify.
+		Please note, currently on the server side setting the state overrides the old state with the new one.
+		This is different to the behaviour with React on the client, where it will partially overwrite the old one, and only change values you specify.
 	**/
 	public function setState(newState:TState):Void {
 		this.state = newState;
 	}
 
 	/**
-	https://facebook.github.io/react/docs/react-component.html#render
+		https://facebook.github.io/react/docs/react-component.html#render
 	**/
 	public function render():SUServerSideNode {
 		return null;
 	}
 
 	/**
-	React lifecycle hook.
-	This is the only lifecycle hook that will be executed in server-side rendering.
-	See https://facebook.github.io/react/docs/react-component.html#componentwillmount
+		React lifecycle hook.
+		This is the only lifecycle hook that will be executed in server-side rendering.
+		See https://facebook.github.io/react/docs/react-component.html#componentwillmount
 	**/
 	public function componentWillMount():Void {}
 
 	/**
-	React lifecycle hook.
-	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-	See https://facebook.github.io/react/docs/react-component.html#componentdidmount
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		See https://facebook.github.io/react/docs/react-component.html#componentdidmount
 	**/
 	public function componentDidMount():Void {}
 
 	/**
-	React lifecycle hook.
-	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-	See https://facebook.github.io/react/docs/react-component.html#componentwillunmount
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		See https://facebook.github.io/react/docs/react-component.html#componentwillunmount
 	**/
 	public function componentWillUnmount():Void {}
 
 	/**
-	React lifecycle hook.
-	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-	See https://facebook.github.io/react/docs/react-component.html#componentwillreceiveprops
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		See https://facebook.github.io/react/docs/react-component.html#componentwillreceiveprops
 	**/
 	public function componentWillReceiveProps(nextProps:TProps):Void {}
 
 	/**
-	React lifecycle hook.
-	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-	See https://facebook.github.io/react/docs/react-component.html#shouldcomponentupdate
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		See https://facebook.github.io/react/docs/react-component.html#shouldcomponentupdate
 	**/
 	dynamic public function shouldComponentUpdate(nextProps:TProps, nextState:TState):Bool {
 		return true;
 	}
 
 	/**
-	React lifecycle hook.
-	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-	See https://facebook.github.io/react/docs/react-component.html#componentwillupdate
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		See https://facebook.github.io/react/docs/react-component.html#componentwillupdate
 	**/
 	public function componentWillUpdate(nextProps:TProps, nextState:TState):Void {}
 
 	/**
-	React lifecycle hook.
-	Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
-	See https://facebook.github.io/react/docs/react-component.html#componentdidupdate
+		React lifecycle hook.
+		Please note this will not be executed in server-side rendering, only `componentWillMount` is executed server side.
+		See https://facebook.github.io/react/docs/react-component.html#componentdidupdate
 	**/
 	public function componentDidUpdate(prevProps:TProps, prevState:TState):Void {}
 }
 
 /**
-A server-side Virtual-DOM element that is the result of a component rendering.
+	A server-side Virtual-DOM element that is the result of a component rendering.
 
-Its only real purpose is to render to a `String` so that we can send HTML to the client.
+	Its only real purpose is to render to a `String` so that we can send HTML to the client.
 
-For internal use only.
-Use `UniversalNode` when typing rendered nodes in your code.
+	For internal use only.
+	Use `UniversalNode` when typing rendered nodes in your code.
 **/
 abstract SUServerSideNode(SUServerSideNodeType) to SUServerSideNodeType {
-	inline function new (type:SUServerSideNodeType) {
+	inline function new(type:SUServerSideNodeType) {
 		this = type;
 	}
 
@@ -119,15 +119,21 @@ abstract SUServerSideNode(SUServerSideNodeType) to SUServerSideNodeType {
 				}
 				return StringTools.htmlEscape(Std.string(str));
 			case Html(tag, props, children):
-				var openingTag = "",
-					attrsHtml = "",
-					childrenHtml = "",
-					dangerousInnerHtml:String = null;
+				var openingTag = "", attrsHtml = "", childrenHtml = "", dangerousInnerHtml:String = null;
 
 				if (props) {
 					var fields = Reflect.fields(props);
 					if (fields.length > 0) {
-						var ignoredFields = ['ref', 'children', 'onCopy', 'onCut', 'onPaste', 'onCompositionEnd', 'onCompositionStart', 'onCompositionUpdate', 'onKeyDown', 'onKeyPress', 'onKeyUp', 'onFocus', 'onBlur', 'onChange', 'onInput', 'onSubmit', 'onClick', 'onContextMenu', 'onDoubleClick', 'onDrag', 'onDragEnd', 'onDragEnter', 'onDragExit', 'onDragLeave', 'onDragOver', 'onDragStart', 'onDrop', 'onMouseDown', 'onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseOut', 'onMouseOver', 'onMouseUp', 'onSelect', 'onTouchCancel', 'onTouchEnd', 'onTouchMove', 'onTouchStart', 'onScroll', 'onWheel', 'onAbort', 'onCanPlay', 'onCanPlayThrough', 'onDurationChange', 'onEmptied', 'onEncrypted', 'onEnded', 'onError', 'onLoadedData', 'onLoadedMetadata', 'onLoadStart', 'onPause', 'onPlay', 'onPlaying', 'onProgress', 'onRateChange', 'onSeeked', 'onSeeking', 'onStalled', 'onSuspend', 'onTimeUpdate', 'onVolumeChange', 'onWaiting', 'onLoad', 'onError', 'onAnimationStart', 'onAnimationEnd', 'onAnimationIteration', 'onTransitionEnd'];
+						var ignoredFields = [
+							'ref', 'children', 'onCopy', 'onCut', 'onPaste', 'onCompositionEnd', 'onCompositionStart', 'onCompositionUpdate', 'onKeyDown',
+							'onKeyPress', 'onKeyUp', 'onFocus', 'onBlur', 'onChange', 'onInput', 'onSubmit', 'onClick', 'onContextMenu', 'onDoubleClick',
+							'onDrag', 'onDragEnd', 'onDragEnter', 'onDragExit', 'onDragLeave', 'onDragOver', 'onDragStart', 'onDrop', 'onMouseDown',
+							'onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseOut', 'onMouseOver', 'onMouseUp', 'onSelect', 'onTouchCancel', 'onTouchEnd',
+							'onTouchMove', 'onTouchStart', 'onScroll', 'onWheel', 'onAbort', 'onCanPlay', 'onCanPlayThrough', 'onDurationChange', 'onEmptied',
+							'onEncrypted', 'onEnded', 'onError', 'onLoadedData', 'onLoadedMetadata', 'onLoadStart', 'onPause', 'onPlay', 'onPlaying',
+							'onProgress', 'onRateChange', 'onSeeked', 'onSeeking', 'onStalled', 'onSuspend', 'onTimeUpdate', 'onVolumeChange', 'onWaiting',
+							'onLoad', 'onError', 'onAnimationStart', 'onAnimationEnd', 'onAnimationIteration', 'onTransitionEnd'
+						];
 
 						for (field in fields) {
 							if (ignoredFields.indexOf(field) > -1) {
@@ -139,7 +145,7 @@ abstract SUServerSideNode(SUServerSideNodeType) to SUServerSideNodeType {
 								dangerousInnerHtml = (data != null) ? data.__html : null;
 								continue;
 							}
-							if (tag  == 'textarea') {
+							if (tag == 'textarea') {
 								if (field == 'value' || field == 'defaultValue') {
 									dangerousInnerHtml = value != null ? StringTools.htmlEscape(Std.string(value)) : null;
 									continue;
@@ -183,14 +189,11 @@ abstract SUServerSideNode(SUServerSideNodeType) to SUServerSideNodeType {
 				}
 
 				openingTag = '<$tag';
-				var selfClosingTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+				var selfClosingTags = [
+					'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
+				];
 				var selfClosingTag = (selfClosingTags.indexOf(tag) > -1) ? '>' : '></$tag>';
-				var html =
-					openingTag
-					 + attrsHtml
-					 + ((childrenHtml != "") ? ">" : selfClosingTag)
-					 + childrenHtml
-					 + ((childrenHtml != "") ? '</${tag}>' : '');
+				var html = openingTag + attrsHtml + ((childrenHtml != "") ? ">" : selfClosingTag) + childrenHtml + ((childrenHtml != "") ? '</${tag}>' : '');
 				return html;
 			case Component(component, props, children):
 				// We don't render and markup for the component or it's children directly.
@@ -238,11 +241,11 @@ abstract SUServerSideNode(SUServerSideNodeType) to SUServerSideNodeType {
 }
 
 /**
-An enum describing the different types of nodes - text, html, sub-components, and node lists (fragments).
+	An enum describing the different types of nodes - text, html, sub-components, and node lists (fragments).
 
-We store our nodes using this representation to make rendering a String easy.
+	We store our nodes using this representation to make rendering a String easy.
 
-For internal use only.
+	For internal use only.
 **/
 enum SUServerSideNodeType {
 	Text(str:String);
@@ -252,12 +255,12 @@ enum SUServerSideNodeType {
 }
 
 /**
-A helper type that can instantiate a component, whether it is a component class or a pure function.
+	A helper type that can instantiate a component, whether it is a component class or a pure function.
 
-For internal use only.
+	For internal use only.
 **/
 abstract SUServerSideRenderFn<TProps>(UniversalFunctionalComponent<TProps>) from UniversalFunctionalComponent<TProps> {
-	public function new (fn) {
+	public function new(fn) {
 		this = fn;
 	}
 
@@ -266,8 +269,8 @@ abstract SUServerSideRenderFn<TProps>(UniversalFunctionalComponent<TProps>) from
 	}
 
 	@:from
-	public static function fromClassComponent<TProps>(cls:Class<SUServerSideComponent<TProps,Dynamic>>):SUServerSideRenderFn<TProps> {
-		return function (props:TProps):SUServerSideNode {
+	public static function fromClassComponent<TProps>(cls:Class<SUServerSideComponent<TProps, Dynamic>>):SUServerSideRenderFn<TProps> {
+		return function(props:TProps):SUServerSideNode {
 			var component = Type.createInstance(cls, [props]);
 			component.componentWillMount();
 			return component.render();

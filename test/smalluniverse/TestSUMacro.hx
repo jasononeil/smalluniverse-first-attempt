@@ -3,6 +3,7 @@ package smalluniverse;
 import buddy.*;
 import smalluniverse.SUMacro.jsx;
 import js.Browser.*;
+
 using buddy.Should;
 
 class TestSUMacro extends BuddySuite {

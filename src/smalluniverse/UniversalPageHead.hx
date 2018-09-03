@@ -9,33 +9,43 @@ import js.html.*;
 // you just include a `<UniversalPageHead><title>Something</title></UniversalPageHead>` somewhere.
 class UniversalPageHead {
 	var title = "";
-	var links:Array<{rel: String, href: String, ?type: String, ?title: String}> = [];
-	var scripts:Array<{src: String, async: Bool}> = [];
-	var meta:Array<{name: String, content: String}> = [];
+	var links:Array<{
+		rel:String,
+		href:String,
+		?type:String,
+		?title:String
+	}> = [];
+	var scripts:Array<{src:String, async:Bool}> = [];
+	var meta:Array<{name:String, content:String}> = [];
 
 	public function new() {}
 
-	public function setTitle(title: String) {
+	public function setTitle(title:String) {
 		this.title = title;
 		return this;
 	}
 
-	public function addScript(src: String, ?async: Bool=true) {
-		scripts.push({src:src, async:async});
+	public function addScript(src:String, ?async:Bool = true) {
+		scripts.push({src: src, async: async});
 		return this;
 	}
 
-	public function addStylesheet(url: String) {
+	public function addStylesheet(url:String) {
 		return addLink('stylesheet', url);
 	}
 
-	public function addLink(rel: String, href: String, ?type: String, ?title: String) {
-		links.push({rel: rel, href: href, type: type, title: title});
+	public function addLink(rel:String, href:String, ?type:String, ?title:String) {
+		links.push({
+			rel: rel,
+			href: href,
+			type: type,
+			title: title
+		});
 		return this;
 	}
 
-	public function addMeta(name: String, content: String) {
-		meta.push({name:name, content:content});
+	public function addMeta(name:String, content:String) {
+		meta.push({name: name, content: content});
 		return this;
 	}
 
@@ -56,11 +66,11 @@ class UniversalPageHead {
 
 	#if client
 	/**
-	Update the current document's `<head>` element to be in sync with the title, meta, links and scripts specified in this `UniversalPageHead`.
+		Update the current document's `<head>` element to be in sync with the title, meta, links and scripts specified in this `UniversalPageHead`.
 
-	@param head (Optional) An alternative `<head>` element to use. Usually you should leave this unspecified, in which case, `document.head` will be used. This is only available for unit testing.
+		@param head (Optional) An alternative `<head>` element to use. Usually you should leave this unspecified, in which case, `document.head` will be used. This is only available for unit testing.
 	**/
-	public function syncHeadToDocument(?head: HeadElement) {
+	public function syncHeadToDocument(?head:HeadElement) {
 		if (head == null) {
 			head = document.head;
 		}
@@ -68,39 +78,45 @@ class UniversalPageHead {
 		// Sync title.
 		var title = document.createTitleElement();
 		title.innerText = this.title;
-		reconcileElements(head, 'title', [title], function (t1, t2) return t1.innerText == t2.innerText);
+		reconcileElements(head, 'title', [title], function(t1, t2) return t1.innerText == t2.innerText);
 
 		// Sync metas.
-		var metaElms = [for (m in meta) {
-			var elm = document.createMetaElement();
-			elm.name = m.name;
-			elm.content = m.content;
-			elm;
-		}];
+		var metaElms = [
+			for (m in meta) {
+				var elm = document.createMetaElement();
+				elm.name = m.name;
+				elm.content = m.content;
+				elm;
+			}
+		];
 		reconcileElements(head, 'meta', metaElms, attrsMatch.bind(['name', 'content']));
 
 		// Sync links.
-		var linkElms = [for (l in links) {
-			var elm = document.createLinkElement();
-			elm.rel = l.rel;
-			elm.href = l.href;
-			elm.type = l.type;
-			elm.title = l.title;
-			elm;
-		}];
+		var linkElms = [
+			for (l in links) {
+				var elm = document.createLinkElement();
+				elm.rel = l.rel;
+				elm.href = l.href;
+				elm.type = l.type;
+				elm.title = l.title;
+				elm;
+			}
+		];
 		reconcileElements(head, 'link', linkElms, attrsMatch.bind(['rel', 'href']));
 
 		// Sync scripts.
-		var scriptElms = [for (s in scripts) {
-			var elm = document.createScriptElement();
-			elm.src = s.src;
-			elm.async = s.async;
-			elm;
-		}];
+		var scriptElms = [
+			for (s in scripts) {
+				var elm = document.createScriptElement();
+				elm.src = s.src;
+				elm.async = s.async;
+				elm;
+			}
+		];
 		reconcileElements(head, 'script', scriptElms, attrsMatch.bind(['src', 'async']));
 	}
 
-	function attrsMatch(attrs: Array<String>, e1, e2) {
+	function attrsMatch(attrs:Array<String>, e1, e2) {
 		for (attr in attrs) {
 			if (e1.getAttribute(attr) != e2.getAttribute(attr))
 				return false;
@@ -108,7 +124,7 @@ class UniversalPageHead {
 		return true;
 	}
 
-	function reconcileElements(head: HeadElement, tagName: String, elementsToSet: Iterable<Element>, match: Element->Element->Bool) {
+	function reconcileElements(head:HeadElement, tagName:String, elementsToSet:Iterable<Element>, match:Element->Element->Bool) {
 		var elementsToKeep = [];
 		var elms = head.querySelectorAll(tagName);
 		var currentElements = [for (i in 0...elms.length) cast elms[i]];

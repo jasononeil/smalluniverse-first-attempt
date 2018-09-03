@@ -2,14 +2,14 @@ package smalluniverse;
 
 import buddy.*;
 import smalluniverse.UniversalPageHead;
+
 using buddy.Should;
 
 class TestUniversalPageHead extends BuddySuite {
 	public function new() {
 		describe("UniversalPageHead", {
-
 			var head;
-			beforeEach(function () {
+			beforeEach(function() {
 				head = new UniversalPageHead();
 				head.setTitle('My Page');
 				head.addScript('common.bundle.js', false);

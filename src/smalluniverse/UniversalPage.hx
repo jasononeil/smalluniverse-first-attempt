@@ -1,30 +1,29 @@
 package smalluniverse;
 
 #if client
-	import react.ReactDOM;
-	import react.React;
-	import js.Browser.window;
-	import js.Browser.document;
-	import js.html.*;
+import react.ReactDOM;
+import react.React;
+import js.Browser.window;
+import js.Browser.document;
+import js.html.*;
 #elseif server
 #end
 import haxe.ds.Option;
 import smalluniverse.UniversalComponent;
+
 using tink.CoreApi;
 
 @:autoBuild(smalluniverse.SUBuildMacro.buildUniversalPage())
 class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, TState> {
-
 	public var head(default, null):UniversalPageHead;
-
 	#if server
 	/**
-	TODO
+		TODO
 	**/
 	public var backendApi:BackendApi<TAction, TProps>;
 
 	/**
-	TODO
+		TODO
 	**/
 	public var action:Option<TAction>;
 
@@ -41,10 +40,11 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		super();
 		this.head = new UniversalPageHead();
 		#if server
-			this.backendApi = backendApi;
-			this.action = None;
+		this.backendApi = backendApi;
+		this.action = None;
 		#end
 	}
+
 	/**
 		Retrieve the properties for this page.
 
@@ -52,35 +52,35 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 	**/
 	public function get():Promise<TProps> {
 		#if server
-			return this.backendApi.get(this.context);
+		return this.backendApi.get(this.context);
 		#elseif client
-			return this.callServerAction(None).next(function (_) return this.props);
+		return this.callServerAction(None).next(function(_) return this.props);
 		#end
 	}
 
 	#if server
-	public function withAction(action: TAction) {
+	public function withAction(action:TAction) {
 		this.action = Some(action);
 		return this;
 	}
 
 	/**
-	Render the HTML for this Universal page.
+		Render the HTML for this Universal page.
 
-	This will fetch the current props using `get()`, call the `componentWillMount()` lifecycle method, and then render to a String.
+		This will fetch the current props using `get()`, call the `componentWillMount()` lifecycle method, and then render to a String.
 
-	Please note this HTML is for the component, not for the full page (including `<head>`, `<title>` etc).
+		Please note this HTML is for the component, not for the full page (including `<head>`, `<title>` etc).
 	**/
-	public function getPageHtml(): Promise<String> {
-		return this.get().next(function (props) {
+	public function getPageHtml():Promise<String> {
+		return this.get().next(function(props) {
 			this.props = props;
 			this.componentWillMount();
 			return this.render().renderToString();
 		});
 	}
 
-	public function getPageJson(): Promise<String> {
-		return this.get().next(function (props) {
+	public function getPageJson():Promise<String> {
+		return this.get().next(function(props) {
 			return this.serializeProps(props);
 		});
 	}
@@ -102,7 +102,6 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		return throw 'Assert: should be implemented by macro';
 	}
 
-
 	#if client
 	/**
 		TODO:
@@ -111,12 +110,11 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		return callServerAction(Some(action));
 	}
 
-	function doClientRender(?cb: Void->Void) {
+	function doClientRender(?cb:Void->Void) {
 		// Note: React is smart enough to maintain our instance and not recreate a new one,
 		// even though we are passing in the class and not the instance.
-		var pageCls:Class<react.ReactComponent.ReactComponent> = cast Type.getClass(this),
-			pageElm = React.createElement(pageCls, this.props),
-			container = document.getElementById('small-universe-app');
+		var pageCls:Class<react.ReactComponent.ReactComponent> = cast Type.getClass(this), pageElm = React.createElement(pageCls, this
+			.props), container = document.getElementById('small-universe-app');
 		if (container == null) {
 			throw new Error('A container with ID small-universe-app was not found, aborting render');
 		}
@@ -126,13 +124,10 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 
 	function callServerAction(action:Option<TAction>):Promise<Noise> {
 		var request = getRequestForAction(action);
-		return fetchRequest(request)
-			.next(getResponseText)
-			.next(handleResponseSpecialInstructions)
-			.next(rerenderUsingUpdatedJson);
+		return fetchRequest(request).next(getResponseText).next(handleResponseSpecialInstructions).next(rerenderUsingUpdatedJson);
 	}
 
-	function getRequestForAction(action:Option<TAction>): Request {
+	function getRequestForAction(action:Option<TAction>):Request {
 		return switch action {
 			case Some(a):
 				var body = serializeAction(a);
@@ -154,7 +149,7 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		}
 	}
 
-	function fetchRequest(req: Request): Promise<Response> {
+	function fetchRequest(req:Request):Promise<Response> {
 		return Future.ofJsPromise(window.fetch(req)).asPromise();
 	}
 
@@ -164,7 +159,7 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		if (res.status != 200) {
 			// The text() promise will succeed even if the response is not a 200.
 			// Take a Success() and map it to a Failure()
-			return responseText.map(function (outcome) return switch outcome {
+			return responseText.map(function(outcome) return switch outcome {
 				case Success(txt): Failure(new Error(res.status, txt));
 				default: outcome;
 			});
@@ -173,11 +168,11 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 	}
 
 	/** Handle special instructions (traces and redirects) that were left in the __smallUniverse property of the returned JSON. **/
-	function handleResponseSpecialInstructions(serializedResponse:String):Outcome<Option<String>,Error> {
-		var response: SUApiResponseInstructions = null;
+	function handleResponseSpecialInstructions(serializedResponse:String):Outcome<Option<String>, Error> {
+		var response:SUApiResponseInstructions = null;
 		try {
 			response = tink.Json.parse(serializedResponse);
-		} catch (err: Error) {
+		} catch (err:Error) {
 			return Failure(err);
 		}
 		var instructions = response.__smallUniverse;
@@ -186,7 +181,8 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 				for (messageValues in instructions.messages) {
 					var args:Array<Dynamic> = [
 						// For each arg, try to parse as JSON, but fall back to a String if it isn't valid JSON.
-						for (arg in messageValues) try haxe.Json.parse(arg) catch (e: Dynamic) arg
+						for (arg in messageValues)
+							try haxe.Json.parse(arg) catch (e:Dynamic) arg
 					];
 					logToConsole(args);
 				}
@@ -200,13 +196,12 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		return Success(Some(serializedResponse));
 	}
 
-	function logToConsole(values: Array<Dynamic>) {
-		var console = js.Browser.console,
-			log = console.log;
+	function logToConsole(values:Array<Dynamic>) {
+		var console = js.Browser.console, log = console.log;
 		untyped log.apply(console, values);
 	}
 
-	function redirectWindow(newUrl: String) {
+	function redirectWindow(newUrl:String) {
 		js.Browser.window.location.assign(newUrl);
 	}
 
@@ -214,8 +209,8 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		switch responseToRender {
 			case Some(serializedResponse):
 				this.props = this.deserializeProps(serializedResponse);
-				return Future.async(function (done) {
-					doClientRender(function () done(Noise));
+				return Future.async(function(done) {
+					doClientRender(function() done(Noise));
 				});
 			case None:
 				return Noise;

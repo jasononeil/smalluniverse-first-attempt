@@ -3,12 +3,12 @@ package smalluniverse;
 import smalluniverse.SUServerSideComponent;
 
 /**
-A virtual-DOM node that is the result of having rendered a component.
+	A virtual-DOM node that is the result of having rendered a component.
 
-On client-side JS, this wraps `ReactElement`.
-On server-side platforms, this wraps `SUServerSideNode`.
+	On client-side JS, this wraps `ReactElement`.
+	On server-side platforms, this wraps `SUServerSideNode`.
 
-Casting from `String` and `Array<UniversalNode>` is supported.
+	Casting from `String` and `Array<UniversalNode>` is supported.
 **/
 abstract UniversalNode(UniversalNodeBaseType) from UniversalNodeBaseType to UniversalNodeBaseType {
 	function new(val) {
@@ -16,29 +16,29 @@ abstract UniversalNode(UniversalNodeBaseType) from UniversalNodeBaseType to Univ
 	}
 
 	/**
-	Render the HTML for the current node.
+		Render the HTML for the current node.
 
-	Please note, on the client side this is done by calling `ReactDOM.render(node, emptyDiv)`.
-	This means that if the node you are embedding is not a valid child of a div, you may receive runtime warnings.
+		Please note, on the client side this is done by calling `ReactDOM.render(node, emptyDiv)`.
+		This means that if the node you are embedding is not a valid child of a div, you may receive runtime warnings.
 
-	In reality, this method is mostly for use server-side, and is only provided client-side for consistency.
+		In reality, this method is mostly for use server-side, and is only provided client-side for consistency.
 	**/
-	public function renderToString(): String {
+	public function renderToString():String {
 		#if server
-			return this.renderToString(true);
+		return this.renderToString(true);
 		#elseif client
-			var container = js.Browser.document.createDivElement();
-			react.ReactDOM.render(this, container);
-			return container.innerHTML;
+		var container = js.Browser.document.createDivElement();
+		react.ReactDOM.render(this, container);
+		return container.innerHTML;
 		#end
 	}
 
 	/**
-	Cast an ordinary string into a UniversalNode.
-	This allows you to use a simple string wherever a UniversalNode is expected.
+		Cast an ordinary string into a UniversalNode.
+		This allows you to use a simple string wherever a UniversalNode is expected.
 	**/
 	@:from
-	public static inline function fromString(str: String): UniversalNode {
+	public static inline function fromString(str:String):UniversalNode {
 		#if server
 		@:privateAccess return new SUServerSideNode(Text(str));
 		#elseif client
@@ -48,24 +48,24 @@ abstract UniversalNode(UniversalNodeBaseType) from UniversalNodeBaseType to Univ
 	}
 
 	/**
-	Cast an Int into a UniversalNode (it will be treated as a String).
+		Cast an Int into a UniversalNode (it will be treated as a String).
 	**/
 	@:from
-	public static inline function fromInt(int: Int): UniversalNode {
-		return fromString(''+int);
+	public static inline function fromInt(int:Int):UniversalNode {
+		return fromString('' + int);
 	}
 
 	/**
-	Cast an Float into a UniversalNode (it will be treated as a String).
+		Cast an Float into a UniversalNode (it will be treated as a String).
 	**/
 	@:from
-	public static inline function fromFloat(float: Float): UniversalNode {
-		return fromString(''+float);
+	public static inline function fromFloat(float:Float):UniversalNode {
+		return fromString('' + float);
 	}
 
 	/**
-	Cast an `Array<UniversalNode>` into a UniversalNode.
-	This allows you to use a collection of fragment nodes together wherever a UniversalNode is expected.
+		Cast an `Array<UniversalNode>` into a UniversalNode.
+		This allows you to use a collection of fragment nodes together wherever a UniversalNode is expected.
 	**/
 	@:from
 	public static inline function fromArray(arr:Array<UniversalNode>):UniversalNode {
@@ -78,7 +78,4 @@ abstract UniversalNode(UniversalNodeBaseType) from UniversalNodeBaseType to Univ
 	}
 }
 
-typedef UniversalNodeBaseType =
-	#if (client) react.ReactComponent.ReactElement
-	#else SUServerSideComponent.SUServerSideNode
-	#end;
+typedef UniversalNodeBaseType = #if (client) react.ReactComponent.ReactElement #else SUServerSideComponent.SUServerSideNode #end;

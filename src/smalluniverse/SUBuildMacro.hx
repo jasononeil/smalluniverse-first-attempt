@@ -1,37 +1,34 @@
 package smalluniverse;
 
 import haxe.macro.Expr;
+
 using tink.MacroApi;
 
 class SUBuildMacro {
 	public static function buildUniversalComponent():Array<Field> {
 		return ClassBuilder.run([
 			#if server
-				removePlatformSpecificMethods.bind(':client')
+			removePlatformSpecificMethods.bind(':client')
 			#elseif client
-				removePlatformSpecificMethods.bind(':server')
+			removePlatformSpecificMethods.bind(':server')
 			#end
 		]);
 	}
 
 	public static function buildUniversalPage():Array<Field> {
-		return ClassBuilder.run([
-			addCustomSerializeMethods
-		]);
+		return ClassBuilder.run([addCustomSerializeMethods]);
 	}
 
 	public static function buildBackendApi():Array<Field> {
 		return ClassBuilder.run([
 			#if client
-				emptyAllMethodsExcept(['get', 'processAction']),
-				emptyMethodBodies,
-				emptyConstructor,
+			emptyAllMethodsExcept(['get', 'processAction']), emptyMethodBodies, emptyConstructor,
 			#end
 		]);
 	}
 
 	static function emptyAllMethodsExcept(methodsToKeep:Array<String>):ClassBuilder->Void {
-		return function (cb:ClassBuilder) {
+		return function(cb:ClassBuilder) {
 			for (member in cb) {
 				if (methodsToKeep.indexOf(member.name) == -1) {
 					cb.removeMember(member);
@@ -50,7 +47,8 @@ class SUBuildMacro {
 		for (member in cb) {
 			// Empty fields with `@:client` metadata.
 			switch member.extractMeta(metaName) {
-				case Success(_): emptyField(cb, member, true);
+				case Success(_):
+					emptyField(cb, member, true);
 				default:
 			}
 		}
@@ -68,40 +66,41 @@ class SUBuildMacro {
 			case FFun(f):
 				if (changeSignature) {
 					for (arg in f.args) {
-						arg.type = macro :Any;
+						arg.type = macro:Any;
 					}
-					f.ret = macro :Any;
+					f.ret = macro:Any;
 				}
 				f.expr = macro return null;
 			case FVar(t, e):
 				if (changeSignature) {
-					member.kind = FVar(macro :Any, macro null);
+					member.kind = FVar(macro:Any, macro null);
 				} else {
 					member.kind = FVar(t, macro null);
 				}
 			case FProp(get, set, t, e):
 				if (changeSignature) {
-					member.kind = FProp(get, set, macro :Any, macro null);
+					member.kind = FProp(get, set, macro:Any, macro null);
 				} else {
 					member.kind = FProp(get, set, t, macro null);
 				}
 		}
 	}
 
-	static function emptyConstructor(cb: ClassBuilder): Void {
+	static function emptyConstructor(cb:ClassBuilder):Void {
 		if (cb.hasConstructor()) {
 			var constructor = cb.getConstructor();
-			constructor.onGenerate(function (fn) {
-				fn.args = [for (a in fn.args) {
-					name: '_',
-					opt: true,
-					type: null,
-					value: null
-				}];
+			constructor.onGenerate(function(fn) {
+				fn.args = [
+					for (a in fn.args)
+						{
+							name: '_',
+							opt: true,
+							type: null,
+							value: null
+						}
+				];
 				fn.params = null;
-				fn.expr =
-					if (cb.target.superClass != null) macro super()
-					else macro {};
+				fn.expr = if (cb.target.superClass != null) macro super() else macro {};
 			});
 		}
 	}
@@ -122,7 +121,7 @@ class SUBuildMacro {
 		var serializeName = 'serialize' + name;
 		var deserializeName = 'deserialize' + name;
 		var newMethods = (macro class Tmp {
-			override public function $serializeName(value:$targetType):String @:pos(cb.target.pos) {
+			override public function $serializeName(value : $targetType):String@:pos(cb.target.pos) {
 				return try {
 					tink.Json.stringify(value);
 				} catch (e:Dynamic) {
@@ -134,7 +133,7 @@ class SUBuildMacro {
 					null;
 				}
 			}
-			override public function $deserializeName(json:String):$targetType @:pos(cb.target.pos) {
+			override public function $deserializeName(json : String):$targetType@:pos(cb.target.pos) {
 				return try {
 					tink.Json.parse(json);
 				} catch (e:Dynamic) {

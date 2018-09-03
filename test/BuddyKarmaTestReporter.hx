@@ -3,37 +3,30 @@ import buddy.BuddySuite;
 import promhx.Promise;
 
 typedef Karma = {
-	result: {
-		id: String,
-		description: String,
-		// the suite to which this test belongs. potentially nested.
-		suite: Array<String>,
-		// an array of string error messages that might explain a failure.
+	result:{
+		id:String, description:String, // the suite to which this test belongs. potentially nested.
+		suite:Array<String>, // an array of string error messages that might explain a failure.
 		// this is required if success is false.
-		?log: Array<String>,
-		success: Bool,
-		skipped: Bool,
-		time: Float,
-	} -> Void,
-	complete: {order: Dynamic, coverage: Dynamic} -> Void,
-	error: {} -> Void,
-	info: {
-		total: Int,
-		specs: Dynamic
-	} -> Void,
+		?log:Array<String>, success:Bool, skipped:Bool, time:Float,
+	}->Void,
+	complete:{order:Dynamic, coverage:Dynamic}->Void,
+	error:{}->Void,
+	info:{
+		total:Int, specs:Dynamic
+	}->Void,
 };
 
 class BuddyKarmaTestReporter extends TraceReporter {
-	var karmaIsReady: Promise<Karma>;
+	var karmaIsReady:Promise<Karma>;
 	var logs = [];
 	var specResults = [];
-	var lastStartTime: Float;
+	var lastStartTime:Float;
 
 	public function new() {
 		super(true);
 		var deferred = new promhx.Deferred();
 		karmaIsReady = new Promise(deferred);
-		js.Lib.global.__karma__.start = function (config) {
+		js.Lib.global.__karma__.start = function(config) {
 			deferred.resolve(js.Lib.global.__karma__);
 		};
 	}
@@ -42,8 +35,8 @@ class BuddyKarmaTestReporter extends TraceReporter {
 	 * Called just before tests are run. If promise is resolved with "false",
 	 * testing will immediately exit with status 1.
 	 */
-	override public function start() : Promise<Bool> {
-		return karmaIsReady.then(function (karma) {
+	override public function start():Promise<Bool> {
+		return karmaIsReady.then(function(karma) {
 			lastStartTime = Date.now().getTime();
 			return true;
 		});
@@ -53,7 +46,7 @@ class BuddyKarmaTestReporter extends TraceReporter {
 	 * Called for every Spec. Can be used to display realtime notifications.
 	 * Resolve with the same spec as the parameter.
 	 */
-	override public function progress(spec : Spec) : Promise<Spec> {
+	override public function progress(spec:Spec):Promise<Spec> {
 		var skipped, success;
 		switch spec.status {
 			case Unknown:
@@ -69,7 +62,7 @@ class BuddyKarmaTestReporter extends TraceReporter {
 				skipped = false;
 				success = false;
 		}
-		return karmaIsReady.then(function (karma) {
+		return karmaIsReady.then(function(karma) {
 			var logs = [];
 			if (spec.failures != null) {
 				for (failure in spec.failures) {
@@ -102,10 +95,10 @@ class BuddyKarmaTestReporter extends TraceReporter {
 	 * Resolve with the same iterable as the parameter.
 	 * Status is true if all tests passed, otherwise false.
 	 */
-	override public function done(suites : Iterable<Suite>, status : Bool) : Promise<Iterable<Suite>> {
+	override public function done(suites:Iterable<Suite>, status:Bool):Promise<Iterable<Suite>> {
 		super.done(suites, status);
 		js.Browser.console.log('\n' + logs.join('\n'));
-		return karmaIsReady.then(function (karma) {
+		return karmaIsReady.then(function(karma) {
 			karma.info({
 				specs: null,
 				total: specResults.length
@@ -121,7 +114,7 @@ class BuddyKarmaTestReporter extends TraceReporter {
 		});
 	}
 
-	override function println(s: String) {
+	override function println(s:String) {
 		logs.push(s);
 	}
 }

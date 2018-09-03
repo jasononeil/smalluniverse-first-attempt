@@ -5,6 +5,7 @@ import buddy.*;
 import smalluniverse.SUServerSideComponent;
 #end
 import smalluniverse.SUMacro.jsx;
+
 using buddy.Should;
 
 class TestSUServerSideComponent extends BuddySuite {
@@ -12,7 +13,7 @@ class TestSUServerSideComponent extends BuddySuite {
 		#if server
 		describe("SUServerSideComponent.SUServerSideRenderFn", {
 			it("should automatically cast from a functional component", {
-				var renderFn: SUServerSideRenderFn<{}> = function (props: {}) {
+				var renderFn:SUServerSideRenderFn<{}> = function(props:{}) {
 					return jsx('<div>Function!</div>');
 				};
 				var result = renderFn.render({});
@@ -20,7 +21,7 @@ class TestSUServerSideComponent extends BuddySuite {
 			});
 
 			it("should automatically cast from a class component", {
-				var renderFn: SUServerSideRenderFn<{}> = TestComponent361;
+				var renderFn:SUServerSideRenderFn<{}> = TestComponent361;
 				var result = renderFn.render({});
 				result.renderToString().should.be('<div>Class</div>');
 			});

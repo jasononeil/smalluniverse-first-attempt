@@ -1,9 +1,10 @@
 package smalluniverse;
 
 import buddy.*;
+
 using buddy.Should;
 
-class MyComponent extends UniversalComponent<{name: String}, {time: Float}> {
+class MyComponent extends UniversalComponent<{name:String}, {time:Float}> {
 	public function new(props) {
 		super(props);
 		this.state = {
@@ -26,7 +27,7 @@ class TestUniversalComponent extends BuddySuite {
 	public function new() {
 		describe("UniversalComponent", {
 			var myComponent;
-			beforeEach(function () {
+			beforeEach(function() {
 				myComponent = new MyComponent({
 					name: 'Jason'
 				});

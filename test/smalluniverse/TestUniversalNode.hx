@@ -5,13 +5,13 @@ import buddy.*;
 import smalluniverse.SUServerSideComponent;
 #end
 import smalluniverse.SUMacro.jsx;
+
 using buddy.Should;
 
 class TestUniversalNode extends BuddySuite {
 	public function new() {
 		describe("UniversalNode", {
-
-			function renderToString(node: UniversalNode): String {
+			function renderToString(node:UniversalNode):String {
 				return node.renderToString();
 			}
 
@@ -20,7 +20,7 @@ class TestUniversalNode extends BuddySuite {
 			});
 
 			it("should render a null JSX entry correctly", {
-				var nullValue: String = null;
+				var nullValue:String = null;
 				var nullNode = jsx('${nullValue}');
 				renderToString(nullNode).should.be('');
 			});
@@ -138,11 +138,7 @@ class TestUniversalNode extends BuddySuite {
 			});
 
 			it("should cast an array and render a node list correctly", {
-				renderToString([
-					jsx('<TestComponent172 />'),
-					jsx('Hello'),
-					jsx('<div>Hi</div>')
-				]).should.be('<div>Class</div>Hello<div>Hi</div>');
+				renderToString([jsx('<TestComponent172 />'), jsx('Hello'), jsx('<div>Hi</div>')]).should.be('<div>Class</div>Hello<div>Hi</div>');
 			});
 		});
 	}

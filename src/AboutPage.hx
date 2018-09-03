@@ -1,5 +1,6 @@
 import smalluniverse.UniversalPage;
 import smalluniverse.SUMacro.jsx;
+
 using tink.CoreApi;
 
 class AboutPage extends UniversalPage<{}, {}, {}> {

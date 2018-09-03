@@ -4,6 +4,7 @@ import buddy.*;
 import js.html.*;
 import js.Browser.*;
 import smalluniverse.SUMacro.jsx;
+
 using buddy.Should;
 using tink.CoreApi;
 
@@ -61,27 +62,27 @@ class TestUniversalPage extends BuddySuite {
 				});
 
 				it("Should throw an error if the JSON is bad", {
-					(function () {
+					(function() {
 						page.deserializeProps('{bad json}');
 					}).should.throwType(tink.core.Error);
 				});
 
 				it("should throw an error if the JSON is missing a field", {
-					(function () {
+					(function() {
 						page.deserializeProps('{"name":"Aaron"}');
 					}).should.throwType(tink.core.Error);
 				});
 
 				it("should silently ignore extra fields", {
-					(function () {
+					(function() {
 						page.deserializeProps('{"name":"Aaron","age":27,"color":"green"}');
 					}).should.not.throwType(tink.core.Error);
 				});
 			});
 
 			describe("the automatically generated serializeProps() method", {
-				function checkJson(json: String, expectedName: String, expectedAge: Int, expectedStudent: Bool, ?pos: haxe.PosInfos) {
-					var parsedObj: {name: String, age: Int, isAStudent: Bool} = haxe.Json.parse(json);
+				function checkJson(json:String, expectedName:String, expectedAge:Int, expectedStudent:Bool, ?pos:haxe.PosInfos) {
+					var parsedObj:{name:String, age:Int, isAStudent:Bool} = haxe.Json.parse(json);
 					parsedObj.name.should.be(expectedName, pos);
 					parsedObj.age.should.be(expectedAge, pos);
 					parsedObj.isAStudent.should.be(expectedStudent, pos);
@@ -95,7 +96,7 @@ class TestUniversalPage extends BuddySuite {
 					checkJson(json, "Jason", 30, null);
 				});
 				it("should ignore extra fields that are not part of the type", {
-					var data: MyTestPageProps = cast {name: "Jason", age: 30, password: "secret"};
+					var data:MyTestPageProps = cast {name: "Jason", age: 30, password: "secret"};
 					var json = page.serializeProps(data);
 					checkJson(json, "Jason", 30, null);
 				});
@@ -119,13 +120,13 @@ class TestUniversalPage extends BuddySuite {
 				});
 
 				it("Should throw an error if the JSON is bad", {
-					(function () {
+					(function() {
 						page.deserializeAction('{bad json}');
 					}).should.throwType(tink.core.Error);
 				});
 
 				it("should throw an error if the JSON is missing a field", {
-					(function () {
+					(function() {
 						page.deserializeAction('{"SetName":{"name":"Jason"}}');
 					}).should.throwType(tink.core.Error);
 				});
@@ -134,7 +135,6 @@ class TestUniversalPage extends BuddySuite {
 					var action5 = page.deserializeAction('{"SetName":{"name":"Jason","age":30,"other":"thing"},"other":"thing"}');
 					action5.should.equal(SetName("Jason", 30));
 				});
-
 			});
 
 			describe("the automatically generated serializeAction() method", {
@@ -151,25 +151,25 @@ class TestUniversalPage extends BuddySuite {
 				});
 			});
 
-			it("should, when get() is called, use the BackendApi on the server or a GET request on the client", function (done) {
+			it("should, when get() is called, use the BackendApi on the server or a GET request on the client", function(done) {
 				page.mockResponseBody = '{
 					"name": "Client",
 					"age": 30
 				}';
 				page.mockResponseStatus = 200;
 				var propsPromise = page.get();
-				propsPromise.handle(function (outcome) {
+				propsPromise.handle(function(outcome) {
 					switch outcome {
 						case Success(props):
 							props.name.should.be(#if server 'Server' #elseif client 'Client' #end);
 							props.age.should.be(30);
 							#if server
-								var backendApi = Std.instance(page.backendApi, MyTestPageBackend);
-								backendApi.getCalled.should.be(1);
-								page.interceptedRequest.should.be(null);
+							var backendApi = Std.instance(page.backendApi, MyTestPageBackend);
+							backendApi.getCalled.should.be(1);
+							page.interceptedRequest.should.be(null);
 							#elseif client
-								page.interceptedRequest.should.not.be(null);
-								page.interceptedRequest.method.should.be('GET');
+							page.interceptedRequest.should.not.be(null);
+							page.interceptedRequest.method.should.be('GET');
 							#end
 						case Failure(err):
 							fail('Expected page.get() call to succeed, but it did not: ' + err.toString());
@@ -179,14 +179,14 @@ class TestUniversalPage extends BuddySuite {
 			});
 
 			#if client
-			it("should make a POST request when trigger() is called", function (done) {
+			it("should make a POST request when trigger() is called", function(done) {
 				page.mockResponseBody = '{
 					"name": "AfterAction",
 					"age": 30
 				}';
 				page.mockResponseStatus = 200;
 				var propsPromise = page.trigger(TransformToUpper);
-				propsPromise.handle(function (outcome) {
+				propsPromise.handle(function(outcome) {
 					switch outcome {
 						case Success(Noise):
 							page.interceptedRequest.method.should.be('POST');
@@ -199,8 +199,8 @@ class TestUniversalPage extends BuddySuite {
 			#end
 
 			#if server
-			it("should render HTML with current props when getPageHtml() is called", function (done) {
-				page.getPageHtml().handle(function (outcome) {
+			it("should render HTML with current props when getPageHtml() is called", function(done) {
+				page.getPageHtml().handle(function(outcome) {
 					switch outcome {
 						case Success(str):
 							str.should.be('<p class="">Server: 30.</p>');
@@ -216,11 +216,11 @@ class TestUniversalPage extends BuddySuite {
 		#if client
 		describe("UniversalPage.callServerAction", {
 			var page;
-			beforeEach(function () {
+			beforeEach(function() {
 				page = new MyTestPage();
 				setupContainer();
 			});
-			afterEach(function () {
+			afterEach(function() {
 				teardownContainer();
 			});
 
@@ -243,40 +243,40 @@ class TestUniversalPage extends BuddySuite {
 					req2.method.should.be('POST');
 				});
 
-				it("should not have an action= parameter if there is an action", function (done) {
+				it("should not have an action= parameter if there is an action", function(done) {
 					var req1 = @:privateAccess page.getRequestForAction(None);
-					req1.text().then(function (text) {
-						(text: String).should.be('');
+					req1.text().then(function(text) {
+						(text : String).should.be('');
 						done();
 					});
 				});
 
-				it("should have an action= parameter if there is an action", function (done) {
+				it("should have an action= parameter if there is an action", function(done) {
 					var req2 = @:privateAccess page.getRequestForAction(Some(TransformToUpper));
-					req2.json().then(function (body) {
-						(body.action: String).should.be('"TransformToUpper"');
+					req2.json().then(function(body) {
+						(body.action : String).should.be('"TransformToUpper"');
 						done();
 					});
 				});
 			});
 
 			describe("getResponseText", {
-				it("should return the text if the status is 200 OK", function (done) {
+				it("should return the text if the status is 200 OK", function(done) {
 					var res1 = new Response('{"name": "Jason"}', {
 						status: 200,
 					});
 					var prom1 = @:privateAccess page.getResponseText(res1);
-					prom1.handle(function (outcome) {
+					prom1.handle(function(outcome) {
 						outcome.should.equal(Success('{"name": "Jason"}'));
 						done();
 					});
 				});
-				it("should provide the error text if a JSON error could not be decoded", function (done) {
+				it("should provide the error text if a JSON error could not be decoded", function(done) {
 					var res1 = new Response('You are not allowed', {
 						status: 401,
 					});
 					var prom1 = @:privateAccess page.getResponseText(res1);
-					prom1.handle(function (outcome) {
+					prom1.handle(function(outcome) {
 						switch outcome {
 							case Failure(err):
 								err.code.should.be(401);
@@ -296,7 +296,8 @@ class TestUniversalPage extends BuddySuite {
 				});
 
 				it("should handle redirects", {
-					var option = @:privateAccess page.handleResponseSpecialInstructions('{
+					var option = @:privateAccess page.handleResponseSpecialInstructions
+						('{
 						"name": "Jason",
 						"__smallUniverse": {
 							"redirect": "http://gotonewpage.com"
@@ -340,8 +341,9 @@ class TestUniversalPage extends BuddySuite {
 			});
 
 			// TODO: mock "fetchRequest" so we can test this as a whole
-			it("should all work together nicely", function (done) {
-				page.mockResponseBody = '{
+			it("should all work together nicely", function(done) {
+				page
+				.mockResponseBody = '{
 					"name": "ANNA",
 					"age": 27,
 					"isAStudent": true,
@@ -354,13 +356,13 @@ class TestUniversalPage extends BuddySuite {
 				}';
 				page.mockResponseStatus = 200;
 				var promise = @:privateAccess page.trigger(TransformToUpper);
-				promise.handle(function (outcome) switch outcome {
+				promise.handle(function(outcome) switch outcome {
 					case Success(Noise):
 						trace('Made it to resolve');
-						page.interceptedRequest.json().then(function (body) {
+						page.interceptedRequest.json().then(function(body) {
 							// The request should be a POST (action).
 							page.interceptedRequest.method.should.be('POST');
-							(body.action: String).should.be('"TransformToUpper"');
+								(body.action : String).should.be('"TransformToUpper"');
 
 							// The props should be correctly deserialised and set.
 							page.props.name.should.be('ANNA');
@@ -390,17 +392,17 @@ class TestUniversalPage extends BuddySuite {
 
 enum MyTestPageActions {
 	TransformToUpper;
-	GetOlder(?howMuch: Int);
-	SetName(name: String, age: Int);
+	GetOlder(?howMuch:Int);
+	SetName(name:String, age:Int);
 	GoToHelpPage;
 	TraceSomething;
 	TraceSomethingAndRedirect;
 }
 
 typedef MyTestPageProps = {
-	name: String,
-	age: Int,
-	?isAStudent: Bool,
+	name:String,
+	age:Int,
+	?isAStudent:Bool,
 }
 
 typedef MyTestPageState = {}
@@ -411,7 +413,7 @@ class MyTestPageBackend implements BackendApi<MyTestPageActions, MyTestPageProps
 
 	public function new() {}
 
-	public function get(context: SmallUniverseContext): Promise<MyTestPageProps> {
+	public function get(context:SmallUniverseContext):Promise<MyTestPageProps> {
 		getCalled++;
 		// Have some could never possibly run on the client.
 		Sys.cpuTime();
@@ -421,10 +423,9 @@ class MyTestPageBackend implements BackendApi<MyTestPageActions, MyTestPageProps
 		};
 	}
 
-	public function processAction(context: SmallUniverseContext, action: MyTestPageActions): Promise<BackendApiResult> {
+	public function processAction(context:SmallUniverseContext, action:MyTestPageActions):Promise<BackendApiResult> {
 		processActionCalled++;
-		if (action.match(GoToHelpPage)) {
-		}
+		if (action.match(GoToHelpPage)) {}
 		switch action {
 			case GoToHelpPage:
 				return BackendApiResult.Redirect('http://help.example.com/');
@@ -443,34 +444,34 @@ class MyTestPageBackend implements BackendApi<MyTestPageActions, MyTestPageProps
 }
 
 class MyTestPage extends UniversalPage<MyTestPageActions, MyTestPageProps, MyTestPageState> {
-	public var redirect: String = null;
-	public var logs: Array<String> = [];
-	public var renders: Array<MyTestPageProps> = [];
-	public var interceptedRequest: Request;
-	public var mockResponseBody: String;
-	public var mockResponseStatus: Int;
+	public var redirect:String = null;
+	public var logs:Array<String> = [];
+	public var renders:Array<MyTestPageProps> = [];
+	public var interceptedRequest:Request;
+	public var mockResponseBody:String;
+	public var mockResponseStatus:Int;
 
 	public function new() {
 		super(new MyTestPageBackend());
 	}
 
-	override public function render(): UniversalNode {
+	override public function render():UniversalNode {
 		var className = props.isAStudent ? "is-student" : "";
 		return jsx('<p className=${className}>${props.name}: ${props.age}.</p>');
 	}
 
 	#if client
-	override function fetchRequest(req: Request): Promise<Response> {
+	override function fetchRequest(req:Request):Promise<Response> {
 		this.interceptedRequest = req;
 		trace('faking a request');
 		return Future.sync(new Response(mockResponseBody, {status: mockResponseStatus}));
 	}
 
-	override function redirectWindow(newUrl: String) {
+	override function redirectWindow(newUrl:String) {
 		this.redirect = newUrl;
 	}
 
-	override function logToConsole(values: Array<Dynamic>) {
+	override function logToConsole(values:Array<Dynamic>) {
 		this.logs.push(values.join(', '));
 	}
 
