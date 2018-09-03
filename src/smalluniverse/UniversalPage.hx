@@ -23,11 +23,6 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 	public var backendApi:BackendApi<TAction, TProps>;
 
 	/**
-		TODO
-	**/
-	public var action:Option<TAction>;
-
-	/**
 		An object containing the server-side request information.
 
 		Please note this is only available on the server.
@@ -41,7 +36,6 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		this.head = new UniversalPageHead();
 		#if server
 		this.backendApi = backendApi;
-		this.action = None;
 		#end
 	}
 
@@ -59,11 +53,6 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 	}
 
 	#if server
-	public function withAction(action:TAction) {
-		this.action = Some(action);
-		return this;
-	}
-
 	/**
 		Render the HTML for this Universal page.
 

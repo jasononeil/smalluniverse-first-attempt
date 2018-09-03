@@ -33,19 +33,19 @@ class Root {
 
 	@:all('/about')
 	public function about(context:Context) {
-		return new SmallUniverse(new AboutPage(), context);
+		return SmallUniverse.render(new AboutPage(), context);
 	}
 
 	@:get('/')
 	@:get('/$location')
 	public function hello(context:Context, location = 'World') {
-		return new SmallUniverse(new HelloPage(location), context);
+		return SmallUniverse.render(new HelloPage(location), context);
 	}
 
 	@:post('/')
 	@:post('/$location')
 	@:consumes('application/json')
 	public function helloPost(context:Context, location = 'World', body:HelloPage.HelloActions) {
-		return new SmallUniverse(new HelloPage(location).withAction(body), context);
+		return SmallUniverse.render(new HelloPage(location), context, body);
 	}
 }
