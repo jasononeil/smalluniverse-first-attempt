@@ -96,45 +96,23 @@ abstract SmallUniverse(UniversalPage<Dynamic,Dynamic,Dynamic>) {
 
 	@:to
 	public function render(): Promise<OutgoingResponse> {
-		return this.context.parse().next(function (fields): Promise<OutgoingResponse> {
-			var actionJson = null;
-			if (this.context.hasParam('action')) {
-				actionJson = this.context.param('action');
-			} else if (fields.length > 0) {
-				// TODO: understand why context.parse() is treating the JSON as key/value pairs, and see if we can clean up this hack.
-				var json = "";
-				for (field in fields) {
-					json += field.name;
-					if (field.value != null && field.value != "") {
-						json += "=" + field.value;
-					}
-				}
-				var request: {action: String} = haxe.Json.parse(json);
-				actionJson = request.action;
-			}
-
-			if (actionJson != null) {
-				return processAction(actionJson).next(function (result): Promise<OutgoingResponse> switch result {
+		switch this.action {
+			case Some(action):
+				return processAction(action).next(function (result): Promise<OutgoingResponse> switch result {
 					case Redirect(url):
-						return prepareRedirect(this, url);
+						return prepareRedirect(url);
 					case Done:
 						// If it's JSON, we return the props directly.
 						// If it's HTML, we want to redirect, so that if they refresh the page it doesn't repeat the action.
-						return isApiRequest(this) ? prepareJsonResponse(this) : prepareRedirectToSamePage(this);
+						return isApiRequest() ? prepareJsonResponse() : prepareRedirectToSamePage();
 				});
-			}
-			return renderPage();
-		});
+			case None:
+				return renderPage();
+		}
 	}
 
-	function processAction(actionJson: String): Promise<BackendApiResult> {
-		try {
-			var action = @:privateAccess this.deserializeAction(actionJson);
-			return this.backendApi.processAction(this.context, action);
-		} catch (e: Dynamic) {
-			trace('Failed to deserialise the JSON for the requested JSON', e);
-			return new Error('Failed to deserialise the JSON for the requested JSON: $e');
-		}
+	function processAction<T>(action: T): Promise<BackendApiResult> {
+		return this.backendApi.processAction(this.context, action);
 	}
 
 	function isApiRequest(): Bool {

@@ -7,41 +7,45 @@ import tink.http.Response.OutgoingResponse;
 import smalluniverse.SmallUniverse;
 
 class Server {
-    static function main() {
-        SmallUniverse.captureTraces();
+	static function main() {
+		SmallUniverse.captureTraces();
 
-        var container = new NodeContainer(8080);
-        var router = new Router<Root>(new Root());
+		var container = new NodeContainer(8080);
+		var router = new Router<Root>(new Root());
 		var handler:Handler = function(req) {
-            return router.route(Context.ofRequest(req))
-                .recover(OutgoingResponse.reportError);
-        };
-        container
-            .run(handler.applyMiddleware(new Static('js', '/js/')))
-            .handle(function (status) {
-                switch status {
-                    case Running(arg1):
-                        trace('Running: Listening on port 8080');
-                    case Failed(err):
-                        trace('Error starting server: $err');
-                    case Shutdown:
-                        trace('Shutdown successful');
-                };
-            });
-    }
+			return router.route(Context.ofRequest(req)).recover(OutgoingResponse.reportError);
+		};
+		container.run(handler.applyMiddleware(new Static('js', '/js/'))).handle(function(status) {
+			switch status {
+				case Running(arg1):
+					trace('Running: Listening on port 8080');
+				case Failed(err):
+					trace('Error starting server: $err');
+				case Shutdown:
+					trace('Shutdown successful');
+			};
+		});
+	}
 }
 
 class Root {
-    public function new() {}
+	public function new() {}
 
 	@:all('/about')
-	public function about(context: Context) {
+	public function about(context:Context) {
 		return new SmallUniverse(new AboutPage(), context);
 	}
 
-    @:all('/')
-    @:all('/$location')
-    public function hello(context: Context, location = 'World') {
+	@:get('/')
+	@:get('/$location')
+	public function hello(context:Context, location = 'World') {
 		return new SmallUniverse(new HelloPage(location), context);
+	}
+
+	@:post('/')
+	@:post('/$location')
+	@:consumes('application/json')
+	public function helloPost(context:Context, location = 'World', body:HelloPage.HelloActions) {
+		return new SmallUniverse(new HelloPage(location).withAction(body), context);
 	}
 }
