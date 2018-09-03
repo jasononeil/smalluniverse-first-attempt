@@ -1,7 +1,8 @@
-# @install: lix --silent download "https://github.com/haxetink/tink_http/archive/c50e9e37ff3355e74b150787e44be4e2ec6f5212.tar.gz" into tink_http/0.6.0/github/c50e9e37ff3355e74b150787e44be4e2ec6f5212
+# @install: lix --silent download "https://github.com/haxetink/tink_http/archive/cb6d3d9670914efb3e30fb493549dc939a60301c.tar.gz" into tink_http/0.6.0/github/cb6d3d9670914efb3e30fb493549dc939a60301c
 -D tink_http=0.6.0
--cp ${HAXESHIM_LIBCACHE}/tink_http/0.6.0/github/c50e9e37ff3355e74b150787e44be4e2ec6f5212/src
+-cp ${HAXESHIM_LIBCACHE}/tink_http/0.6.0/github/cb6d3d9670914efb3e30fb493549dc939a60301c/src
 
 -lib http-status
 -lib tink_url
+-lib tink_anon
 -lib tink_io

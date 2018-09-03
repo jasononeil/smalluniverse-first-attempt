@@ -1,3 +1,3 @@
-# @install: lix --silent download "haxelib:haxe-loader#0.2.1" into haxe-loader/0.2.1/haxelib
--D haxe-loader=0.2.1
--cp ${HAXESHIM_LIBCACHE}/haxe-loader/0.2.1/haxelib/haxelib/
+# @install: lix --silent download "haxelib:haxe-loader#0.8.0" into haxe-loader/0.8.0/haxelib
+-D haxe-loader=0.8.0
+-cp ${HAXESHIM_LIBCACHE}/haxe-loader/0.8.0/haxelib/haxelib/

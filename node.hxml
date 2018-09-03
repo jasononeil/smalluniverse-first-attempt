@@ -9,4 +9,5 @@
 -cp src
 -main Server
 -js www/server.js
+-D prevent-webpack-js-output
 -debug
