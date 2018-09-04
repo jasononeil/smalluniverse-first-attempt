@@ -4,10 +4,33 @@ package smalluniverse;
 import tink.http.Response;
 import tink.http.Header;
 import tink.Json;
+import tink.web.routing.*;
 #elseif client
 import js.Browser.document;
 #end
 using tink.CoreApi;
+
+#if server
+// TODO: make this a genericBuild or autoBuild, so we can correctl set the type of `page` and `body`.
+class SmallUniverseRoute {
+	var page:HelloPage;
+
+	public function new(page) {
+		this.page = page;
+	}
+
+	@:get('/')
+	public function hello(context:Context) {
+		return SmallUniverse.render(page, context);
+	}
+
+	@:post('/')
+	@:consumes('application/json')
+	public function helloPost(context:Context, body:HelloPage.HelloActions) {
+		return SmallUniverse.render(page, context, body);
+	}
+}
+#end
 
 class SmallUniverse {
 	#if client

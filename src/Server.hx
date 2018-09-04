@@ -31,21 +31,11 @@ class Server {
 class Root {
 	public function new() {}
 
-	@:all('/about')
-	public function about(context:Context) {
-		return SmallUniverse.render(new AboutPage(), context);
-	}
-
-	@:get('/')
-	@:get('/$location')
-	public function hello(context:Context, location = 'World') {
-		return SmallUniverse.render(new HelloPage(location), context);
-	}
-
-	@:post('/')
-	@:post('/$location')
-	@:consumes('application/json')
-	public function helloPost(context:Context, location = 'World', body:HelloPage.HelloActions) {
-		return SmallUniverse.render(new HelloPage(location), context, body);
+	// @:sub
+	// public var about = new SmallUniverseRoute(new AboutPage());
+	@:sub('/$location')
+	@:sub('/')
+	public function hello(location = 'The World') {
+		return new SmallUniverseRoute(new HelloPage(location));
 	}
 }
