@@ -4,7 +4,6 @@ package smalluniverse;
 import tink.http.Response;
 import tink.http.Header;
 import tink.Json;
-import haxe.PosInfos;
 #elseif client
 import js.Browser.document;
 #end
@@ -180,42 +179,12 @@ class SmallUniverse {
 		return script;
 	}
 
-	// TODO: Consider moving this to a singleton utility, so the "SmallUniverse" class has no static state.
-	static var logs:Array<Array<String>> = [];
-
 	public static function captureTraces() {
-		haxe.Log.trace = function(v:Dynamic, ?pos:PosInfos) {
-			var arr:Array<Dynamic> = [];
-			arr.push('%c${pos.className}.${pos.methodName}():${pos.lineNumber}');
-			arr.push("background: #222; color: white");
-			arr.push(v);
-			if (pos.customParams != null) {
-				for (arg in pos.customParams) {
-					arr.push(arg);
-				}
-			}
-			var stringArray = arr.map(function(val) return haxe.Json.stringify(val));
-
-			#if hxnodejs
-			// Also log to the server console.
-			var className = pos.className.substr(pos.className.lastIndexOf('.') + 1), params = [v], resetColor = "\x1b[0m", dimColor = "\x1b[2m";
-			if (pos.customParams != null) {
-				for (p in pos.customParams)
-					params.push(p);
-			}
-			js.Node.console.log('${dimColor}${className}.${pos.methodName}():${pos.lineNumber}:${resetColor} ${params.join(" ")}');
-			#end
-			logs.push(stringArray);
-		};
+		SULogger.instance.captureTraces();
 	}
 
-	static function getMessages():Null<Array<Array<String>>> {
-		if (logs.length > 0) {
-			var toReturn = logs;
-			logs = [];
-			return toReturn;
-		}
-		return null;
+	static function getMessages() {
+		return SULogger.instance.getMessages();
 	}
 	#end
 }
