@@ -33,12 +33,13 @@ class SUMacro {
 		}
 	}
 
-	/* PARSER  */
+	//
+	// JSX parser
+	//
 	#if macro
 	static function parseJsx(jsx:String, pos:Position):Expr {
 		jsx = JsxSanitize.process(jsx);
-		var xml = try Xml.parse(jsx) #if (haxe_ver >= 3.3)
-		catch (err:haxe.xml.Parser.XmlParserException) {
+		var xml = try Xml.parse(jsx) catch (err:haxe.xml.Parser.XmlParserException) {
 			var posInfos = Context.getPosInfos(pos);
 			var realPos = Context.makePosition({
 				file: posInfos.file,
@@ -46,8 +47,7 @@ class SUMacro {
 				max: posInfos.max + err.position,
 			});
 			Context.fatalError('Invalid JSX: ' + err.message, realPos);
-		} #end
-	catch (err:Dynamic) Context.fatalError('Invalid JSX: ' + err, err.pos ? err.pos : pos);
+		}
 
 		var ast = JsxParser.process(xml);
 		var expr = parseJsxNode(ast, pos);
