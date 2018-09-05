@@ -1,4 +1,4 @@
-import smalluniverse.SmallUniverse;
+import smalluniverse.UniversalPage;
 import js.Browser.window;
 import js.Browser.document;
 
@@ -8,11 +8,11 @@ class Client {
 			var propsElem = document.getElementById('small-universe-props');
 			switch propsElem.getAttribute('data-page') {
 				case 'AboutPage':
-					SmallUniverse.hydrate(AboutPage);
+					UniversalPage.hydrate(AboutPage);
 				// Webpack.load(AboutPage).then(function () {
 				// });
 				case 'HelloPage':
-					SmallUniverse.hydrate(HelloPage);
+					UniversalPage.hydrate(HelloPage);
 				// Webpack.load(HelloPage).then(function () {
 				// });
 				default:

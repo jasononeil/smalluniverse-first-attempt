@@ -4,7 +4,7 @@ import tink.http.Handler;
 import tink.web.routing.*;
 import tink.http.middleware.Static;
 import tink.http.Response.OutgoingResponse;
-import smalluniverse.SmallUniverse;
+import smalluniverse.*;
 
 class Server {
 	static function main() {

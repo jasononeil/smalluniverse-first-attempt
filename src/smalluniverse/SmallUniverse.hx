@@ -10,51 +10,8 @@ import js.Browser.document;
 #end
 using tink.CoreApi;
 
-#if server
-@:genericBuild(smalluniverse.SUBuildMacro.buildSmallUniverseRoute())
-class SmallUniverseRoute<TPage:UniversalPage<Dynamic, Dynamic, Dynamic>> {}
-#end
-
 class SmallUniverse {
-	#if client
-	public static function hydrate(pageCls:Class<Dynamic>):Promise<Noise> {
-		var propsElem = document.getElementById('small-universe-props');
-		var propsJson = propsElem.innerText;
-		var page = Type.createInstance(pageCls, []);
-		try {
-			page.props = page.deserializeProps(propsJson);
-		} catch (e:Dynamic) {
-			trace('Failed to deserialize props', e);
-			return new Error('Failed to deserialize props: $e');
-		}
-		return Future.async(function(done:Outcome<Noise, Error>->Void) {
-			try {
-				page.doClientRender(function() done(Success(Noise)));
-			} catch (e:Dynamic) {
-				trace('Failed to render page', e);
-				done(Failure(new Error('Failed to render page: $e')));
-			}
-		});
-	}
-	#end
-
 	#if server
-	/**
-		The template to use for rendering basic page markup server side.
-
-		The default should be sufficient for most use cases.
-
-		Use `{BODY}`, `{HEAD}`, `{PAGE}`, `{PROPS}` and `{LOGS}` strings as insertion points.
-	**/
-	static var template:String = '<html>
-		<head>{HEAD}</head>
-		<body>
-			<div id="small-universe-app">{BODY}</div>
-			<script id="small-universe-props" type="text/json" data-page="{PAGE}">{PROPS}</script>
-			{LOGS}
-		</body>
-	</html>';
-
 	public static function render(pageToUse:LazyUniversalPage, context:SmallUniverseContext, ?action:Any):Promise<OutgoingResponse> {
 		var actionValue = (action != null) ? Some(action) : None;
 		var page = pageToUse();
@@ -73,6 +30,26 @@ class SmallUniverse {
 				return renderPage(page);
 		}
 	}
+
+	public static function captureTraces() {
+		SULogger.instance.captureTraces();
+	}
+
+	/**
+		The template to use for rendering basic page markup server side.
+
+		The default should be sufficient for most use cases.
+
+		Use `{BODY}`, `{HEAD}`, `{PAGE}`, `{PROPS}` and `{LOGS}` strings as insertion points.
+	**/
+	static var template:String = '<html>
+		<head>{HEAD}</head>
+		<body>
+			<div id="small-universe-app">{BODY}</div>
+			<script id="small-universe-props" type="text/json" data-page="{PAGE}">{PROPS}</script>
+			{LOGS}
+		</body>
+	</html>';
 
 	static function processAction<T>(page:UniversalPage<T, Dynamic, Dynamic>, action:T):Promise<BackendApiResult> {
 		return page.backendApi.processAction(page.context, action);
@@ -132,7 +109,7 @@ class SmallUniverse {
 	}
 
 	static function prepareJsonResponse(page:UniversalPage<Dynamic, Dynamic, Dynamic>):Promise<OutgoingResponse> {
-		return page.getPageJson().next(function(pageJson) {
+		return page.get().next(@:privateAccess page.serializeProps).next(function(pageJson) {
 			var logs = getMessages();
 			if (logs != null) {
 				// Please note we have to use haxe.Json instead of tink.Json.
@@ -148,7 +125,7 @@ class SmallUniverse {
 	}
 
 	static function prepareHtmlResponse(page:UniversalPage<Dynamic, Dynamic, Dynamic>):Promise<OutgoingResponse> {
-		return page.getPageHtml().next(function(pageHtml) {
+		return getPageHtml(page).next(function(pageHtml) {
 			var propsJson = @:privateAccess page.serializeProps(page.props);
 			var pageName = Type.getClassName(Type.getClass(page));
 			var head = page.head.renderToString();
@@ -163,6 +140,14 @@ class SmallUniverse {
 			html = StringTools.replace(html, '{LOGS}', logScripts);
 
 			return new OutgoingResponse(header(200, 'text/html'), html);
+		});
+	}
+
+	static function getPageHtml(page:UniversalPage<Dynamic, Dynamic, Dynamic>):Promise<String> {
+		return page.get().next(function(props) {
+			@:privateAccess page.props = props;
+			page.componentWillMount();
+			return page.render().renderToString();
 		});
 	}
 
@@ -183,10 +168,6 @@ class SmallUniverse {
 		}
 		script += '\n</script>';
 		return script;
-	}
-
-	public static function captureTraces() {
-		SULogger.instance.captureTraces();
 	}
 
 	static function getMessages() {
