@@ -1,5 +1,5 @@
 {
-  "haxe.displayConfigurations": [["client.hxml"], ["server.hxml"]],
+  "haxe.displayConfigurations": [["client.hxml"], ["node.hxml"]],
   "editor.insertSpaces": false,
   "eslint.enable": false,
   "editor.formatOnSave": true
