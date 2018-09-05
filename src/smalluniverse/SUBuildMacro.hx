@@ -1,6 +1,9 @@
 package smalluniverse;
 
+import haxe.macro.Context;
+import haxe.macro.Type;
 import haxe.macro.Expr;
+import haxe.ds.Option;
 
 using tink.MacroApi;
 
@@ -25,6 +28,16 @@ class SUBuildMacro {
 			emptyAllMethodsExcept(['get', 'processAction']), emptyMethodBodies, emptyConstructor,
 			#end
 		]);
+	}
+
+	/**
+		Build a SmallUniverseRoute appropriate for the UniversalPage type.
+
+		The main thing here is the "POST" method needs to use tink_web macro magic to parse the JSON of the expected action.
+		This build method extends
+	**/
+	public static function buildSmallUniverseRoute():ComplexType {
+		return buildRoute(Context.getLocalType());
 	}
 
 	static function emptyAllMethodsExcept(methodsToKeep:Array<String>):ClassBuilder->Void {
@@ -148,5 +161,93 @@ class SUBuildMacro {
 		}).fields;
 		cb.addMember(newMethods[0]);
 		cb.addMember(newMethods[1]);
+	}
+
+	//
+	// SmallUniverseRoute builder
+	//
+	static function buildRoute(localType:Type):ComplexType {
+		switch (Context.getLocalType()) {
+			case TInst(classRef, [pageType]) if (classRef.toString() == "smalluniverse.SmallUniverseRoute"):
+				switch getActionType(pageType) {
+					case Some(actionType):
+						return getOrDefineClass(pageType, actionType);
+					case None:
+				}
+			case TInst(classRef, typeParams) if (classRef.toString() == "smalluniverse.SmallUniverseRoute"):
+				Context.error('You must specify a type parameter: eg `new SmallUniverseRoute<MyUniversalPage>(new MyUniversalPage())`', Context.currentPos());
+			case t:
+				Context.error('buildSmallUniverseRoute() should only be used on SmallUniverseRoute, but was used on $t', Context.currentPos());
+		}
+		return null;
+	}
+
+	static function getActionType(pageType:Type):Option<ComplexType> {
+		return switch pageType {
+			case TInst(pageRef, params):
+				var pageClassType = pageRef.get();
+				if (pageClassType.superClass == null) {
+					Context.error('Expected page type to be a subclass of UniversalPage, but ${pageRef.toString()} does not extend anything', Context.currentPos
+						());
+					return None;
+				}
+				// TODO: make this recursive, so we can subclass UniversalPages and it will climb the tree until we find UniversalPage.
+				var superClassName = pageClassType.superClass.t.toString();
+				if (superClassName != "smalluniverse.UniversalPage") {
+					Context.error('Expected page type to be a subclass of UniversalPage, but ${pageRef.toString()} extends $superClassName instead', Context
+						.currentPos());
+					return None;
+				}
+				var pageParams = pageClassType.superClass.params;
+				var actionType = pageParams[0];
+				return Some(actionType.toComplex());
+			case other:
+				Context.error('Expected pageType to be a class (TInst), but was $other', Context.currentPos());
+				return None;
+		}
+	}
+
+	static function getOrDefineClass(pageType:Type, actionType:ComplexType):ComplexType {
+		var pack = ["smalluniverse", "generated", "routes"];
+		var name = "Route_" + StringTools.replace(pageType.toComplex().toString(), ".", "_");
+		var fullName = pack.join(".") + "." + name;
+
+		try {
+			// See if the type already exists.
+			var type = Context.getType(fullName);
+			return type.toComplex();
+		} catch (err:String) {
+			// If not, define it and return it.
+			Context.defineType(getRouteDefinition(pack, name, pageType.toComplex(), actionType));
+			return TPath({
+				name: name,
+				pack: pack,
+				params: [],
+				sub: null
+			});
+		}
+	}
+
+	static function getRouteDefinition(pack:Array<String>, name:String, page:ComplexType, action:ComplexType) {
+		var definition = macro class $name {
+			var page:$page;
+
+			public function new(page:$page) {
+				this.page = page;
+			}
+
+			@:get('/')
+			public function get(context:tink.web.routing.Context) {
+				return SmallUniverse.render(page, context);
+			}
+
+			@:post('/')
+			@:consumes('application/json')
+			public function post(context:tink.web.routing.Context, body:$action) {
+				return SmallUniverse.render(page, context, body);
+			}
+		}
+		definition.pack = pack;
+		return definition;
 	}
 }

@@ -31,11 +31,12 @@ class Server {
 class Root {
 	public function new() {}
 
-	// @:sub
-	// public var about = new SmallUniverseRoute(new AboutPage());
+	@:sub
+	public var about = new SmallUniverseRoute<AboutPage>(new AboutPage());
+
 	@:sub('/$location')
 	@:sub('/')
 	public function hello(location = 'The World') {
-		return new SmallUniverseRoute(new HelloPage(location));
+		return new SmallUniverseRoute<HelloPage>(new HelloPage(location));
 	}
 }

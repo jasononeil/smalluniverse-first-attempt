@@ -11,25 +11,8 @@ import js.Browser.document;
 using tink.CoreApi;
 
 #if server
-// TODO: make this a genericBuild or autoBuild, so we can correctl set the type of `page` and `body`.
-class SmallUniverseRoute {
-	var page:HelloPage;
-
-	public function new(page) {
-		this.page = page;
-	}
-
-	@:get('/')
-	public function hello(context:Context) {
-		return SmallUniverse.render(page, context);
-	}
-
-	@:post('/')
-	@:consumes('application/json')
-	public function helloPost(context:Context, body:HelloPage.HelloActions) {
-		return SmallUniverse.render(page, context, body);
-	}
-}
+@:genericBuild(smalluniverse.SUBuildMacro.buildSmallUniverseRoute())
+class SmallUniverseRoute<TPage:UniversalPage<Dynamic, Dynamic, Dynamic>> {}
 #end
 
 class SmallUniverse {
