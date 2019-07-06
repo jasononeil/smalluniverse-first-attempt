@@ -2121,9 +2121,9 @@ less@^2.7.2:
     request "^2.72.0"
     source-map "^0.5.3"
 
-lix.pm@^0.14.0:
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/lix.pm/-/lix.pm-0.14.0.tgz#9e099a8452b459db0026654608a6625109b13121"
+lix@^15.4.1:
+  version "15.4.1"
+  resolved "https://registry.yarnpkg.com/lix/-/lix-15.4.1.tgz#c570ba5c22525e1abbf77cb91d9b8385bfa628c7"
 
 load-json-file@^1.0.0:
   version "1.1.0"

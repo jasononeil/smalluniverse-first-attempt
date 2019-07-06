@@ -26,7 +26,7 @@
     "karma-chrome-launcher": "^2.2.0",
     "less": "^2.7.2",
     "less-loader": "^2.2.3",
-    "lix.pm": "^0.14.0",
+    "lix": "^15.4.1",
     "nodemon": "^1.12.1",
     "prettier": "^1.4.2",
     "style-loader": "^0.13.1",

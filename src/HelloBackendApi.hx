@@ -1,5 +1,5 @@
 #if server
-import asys.io.File;
+import js.node.Fs;
 #end
 import tink.Json;
 import HelloPage;
@@ -21,30 +21,50 @@ class HelloBackendApi implements BackendApi<HelloActions, HelloProps> {
 	}
 
 	public function get(context):Promise<HelloProps> {
-		return File.getContent('props.json').map(function(outcome) {
-			var props:{name:String, age:Int} = Json.parse(outcome.sure());
-			return {
-				name: props.name,
-				age: props.age,
-				location: (this.location != null) ? this.location : "the world"
-			};
+		return Future.async(resolve -> {
+			Fs.readFile('props.json', function(err, buffer) {
+				if (err != null) {
+					resolve(Failure(new Error('Error reading props.json: ${err}')));
+				}
+				var props:{name:String, age:Int} = Json.parse(buffer.toString());
+
+				resolve(Success({
+					name: props.name,
+					age: props.age,
+					location: (this.location != null) ? this.location : "the world"
+				}));
+			});
 		});
 	}
 
 	public function processAction(context, action):Promise<BackendApiResult> {
-		return File.getContent('props.json').flatMap(function(outcome) {
-			var props:{name:String, age:Int} = Json.parse(outcome.sure());
-			switch action {
-				case ChangeName(newName):
-					props.name = newName;
-				case GetOlder:
-					props.age++;
-			}
-			var json = Json.stringify(props);
-			return File.saveContent('props.json', json);
-		}).map(function(outcome) {
-			outcome.sure();
-			return BackendApiResult.Done;
+		return get(context).next(props -> {
+			props = updatePropsForAction(props, action);
+			return Future.async(resolve -> {
+				Fs.writeFile('props.json', Json.stringify(props), function(err) {
+					if (err != null) {
+						resolve(Failure(Error.withData('Failed to save props.json', err)));
+					}
+					resolve(Success(BackendApiResult.Done));
+				});
+			});
 		});
+	}
+
+	function updatePropsForAction(props:HelloProps, action:HelloActions):HelloProps {
+		return switch action {
+			case ChangeName(newName):
+				{
+					name: newName,
+					age: props.age,
+					location: props.location,
+				}
+			case GetOlder:
+				{
+					name: props.name,
+					age: props.age + 1,
+					location: props.location,
+				}
+		}
 	}
 }
