@@ -24,8 +24,6 @@
     "haxeshim": "^0.12.4",
     "karma": "^4.1.0",
     "karma-chrome-launcher": "^2.2.0",
-    "less": "^3.9.0",
-    "less-loader": "^5.0.0",
     "lix": "^15.4.1",
     "nodemon": "^1.19.1",
     "prettier": "^1.18.2",

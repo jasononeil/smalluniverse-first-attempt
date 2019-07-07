@@ -3,7 +3,7 @@ var path = require("path");
 module.exports = {
   entry: {
     server: "./node.hxml",
-    client: "./client.hxml",
+    client: "./client.hxml"
     // "test-client": "./test-client.hxml"
     // 'test-server': './test-server.hxml',
   },
@@ -18,14 +18,10 @@ module.exports = {
         use: [{ loader: "haxe-loader", options: { delayForNonJsBuilds: 300 } }]
       },
       {
-        test: /\.less$/,
+        test: /\.css$/,
         use: [
           "style-loader",
-          { loader: "css-loader", options: { importLoaders: 1 } },
-          {
-            loader: "less-loader",
-            options: { strictMath: true, noIeCompat: true }
-          }
+          { loader: "css-loader", options: { importLoaders: 1 } }
         ]
       }
     ]
