@@ -1,0 +1,10 @@
+-D server
+-lib react
+-lib tink_web
+-lib tink_core
+-lib tink_macro
+-lib tink_json
+-cp src
+-main Server
+-php www/
+-debug

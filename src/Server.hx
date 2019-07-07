@@ -11,7 +11,7 @@ class Server {
 	static function main() {
 		SmallUniverse.captureTraces();
 
-		var container = new NodeContainer(8080);
+		var container = #if js new NodeContainer(8080); #elseif php PhpContainer.inst; #end
 		var router = new Router<Root>(new Root());
 		var handler:Handler = function(req) {
 			return router.route(Context.ofRequest(req)).recover(OutgoingResponse.reportError);

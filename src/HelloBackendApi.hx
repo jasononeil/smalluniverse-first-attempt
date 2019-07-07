@@ -1,5 +1,9 @@
 #if server
+#if js
 import js.node.Fs;
+#elseif php
+import sys.io.File;
+#end
 #end
 import tink.Json;
 import HelloPage;
@@ -21,6 +25,7 @@ class HelloBackendApi implements BackendApi<HelloActions, HelloProps> {
 	}
 
 	public function get(context):Promise<HelloProps> {
+		#if js
 		return Future.async(resolve -> {
 			Fs.readFile('props.json', function(err, buffer) {
 				if (err != null) {
@@ -35,9 +40,19 @@ class HelloBackendApi implements BackendApi<HelloActions, HelloProps> {
 				}));
 			});
 		});
+		#elseif php
+		var json = File.getContent('props.json');
+		var props:{name:String, age:Int} = Json.parse(json);
+		return {
+			name: props.name,
+			age: props.age,
+			location: (this.location != null) ? this.location : "the world"
+		};
+		#end
 	}
 
 	public function processAction(context, action):Promise<BackendApiResult> {
+		#if js
 		return get(context).next(props -> {
 			props = updatePropsForAction(props, action);
 			return Future.async(resolve -> {
@@ -49,6 +64,18 @@ class HelloBackendApi implements BackendApi<HelloActions, HelloProps> {
 				});
 			});
 		});
+		#elseif php
+		var json = File.getContent('props.json');
+		var savedValue:{name:String, age:Int} = Json.parse(json);
+		var props = {
+			name: savedValue.name,
+			age: savedValue.age,
+			location: (this.location != null) ? this.location : "the world"
+		}
+		props = updatePropsForAction(props, action);
+		File.saveContent('props.json', Json.stringify(props));
+		return BackendApiResult.Done;
+		#end
 	}
 
 	function updatePropsForAction(props:HelloProps, action:HelloActions):HelloProps {
