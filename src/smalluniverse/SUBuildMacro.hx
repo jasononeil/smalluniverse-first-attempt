@@ -10,10 +10,7 @@ using tink.MacroApi;
 class SUBuildMacro {
 	public static function buildUniversalComponent():Array<Field> {
 		return ClassBuilder.run([
-			#if server
-			removePlatformSpecificMethods.bind(':client')
-			#elseif client
-			removePlatformSpecificMethods.bind(':server')
+			#if server removePlatformSpecificMethods.bind(':client') #elseif client removePlatformSpecificMethods.bind(':server')
 			#end
 		]);
 	}
@@ -24,8 +21,7 @@ class SUBuildMacro {
 
 	public static function buildBackendApi():Array<Field> {
 		return ClassBuilder.run([
-			#if client
-			emptyAllMethodsExcept(['get', 'processAction']), emptyMethodBodies, emptyConstructor,
+			#if client emptyAllMethodsExcept(['get', 'processAction']), emptyMethodBodies, emptyConstructor,
 			#end
 		]);
 	}
@@ -127,7 +123,7 @@ class SUBuildMacro {
 		var actionsCT = cb.target.superClass.params[0].toComplex();
 		var propsCT = cb.target.superClass.params[1].toComplex();
 		addSerializeMethods(cb, 'Props', propsCT);
-		addSerializeMethods(cb, 'Action', actionsCT);
+		addSerializeMethods(cb, 'Action', macro:smalluniverse.SURequestBody<$actionsCT>);
 	}
 
 	static function addSerializeMethods(cb:ClassBuilder, name:String, targetType:ComplexType) {
@@ -146,6 +142,7 @@ class SUBuildMacro {
 					null;
 				}
 			}
+
 			override public function $deserializeName(json : String):$targetType@:pos(cb.target.pos) {
 				return try {
 					tink.Json.parse(json);
@@ -187,15 +184,15 @@ class SUBuildMacro {
 			case TInst(pageRef, params):
 				var pageClassType = pageRef.get();
 				if (pageClassType.superClass == null) {
-					Context.error('Expected page type to be a subclass of UniversalPage, but ${pageRef.toString()} does not extend anything', Context.currentPos
-						());
+					Context.error('Expected page type to be a subclass of UniversalPage, but ${pageRef.toString()} does not extend anything',
+						Context.currentPos());
 					return None;
 				}
 				// TODO: make this recursive, so we can subclass UniversalPages and it will climb the tree until we find UniversalPage.
 				var superClassName = pageClassType.superClass.t.toString();
 				if (superClassName != "smalluniverse.UniversalPage") {
-					Context.error('Expected page type to be a subclass of UniversalPage, but ${pageRef.toString()} extends $superClassName instead', Context
-						.currentPos());
+					Context.error('Expected page type to be a subclass of UniversalPage, but ${pageRef.toString()} extends $superClassName instead',
+						Context.currentPos());
 					return None;
 				}
 				var pageParams = pageClassType.superClass.params;
@@ -242,9 +239,9 @@ class SUBuildMacro {
 			}
 
 			@:post('/')
-			@:consumes('application/json')
-			public function post(context:tink.web.routing.Context, body:$action) {
-				return SmallUniverse.render(page, context, body);
+			@:consumes('application/json') // tink_querystring doesn't support decoding enums, so we're limiting to JSON only
+			public function post(context:tink.web.routing.Context, body:smalluniverse.SURequestBody<$action>) {
+				return SmallUniverse.render(page, context, body.action);
 			}
 		}
 		definition.pack = pack;

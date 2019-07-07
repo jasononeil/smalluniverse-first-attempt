@@ -34,7 +34,7 @@ class SUUniversalPageClientUtils {
 	}
 
 	public static function callServerApi<TAction>(page:UniversalPage<TAction, Dynamic, Dynamic>, action:Option<TAction>):Promise<Noise> {
-		var serializedAction = action.map(@:privateAccess page.serializeAction);
+		var serializedAction = action.map(a -> @:privateAccess page.serializeAction({action: a}));
 		var request = getRequestForAction(serializedAction);
 		return fetchRequest(request).next(getResponseText).next(handleResponseSpecialInstructions).next(rerenderUsingUpdatedJson.bind(page));
 	}

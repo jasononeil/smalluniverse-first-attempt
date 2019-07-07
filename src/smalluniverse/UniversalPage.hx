@@ -17,6 +17,7 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 	#end
 
 	public var head(default, null):UniversalPageHead;
+
 	#if server
 	/**
 		TODO
@@ -61,11 +62,11 @@ class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, 
 		return throw 'Assert: should be implemented by macro';
 	}
 
-	function deserializeAction(json:String):TAction {
+	function deserializeAction(json:String):SURequestBody<TAction> {
 		return throw 'Assert: should be implemented by macro';
 	}
 
-	function serializeAction(action:TAction):String {
+	function serializeAction(action:SURequestBody<TAction>):String {
 		return throw 'Assert: should be implemented by macro';
 	}
 
