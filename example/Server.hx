@@ -37,8 +37,10 @@ class Root {
 	public var about = new SmallUniverseRoute<AboutPage>(new AboutPage());
 
 	@:sub('/$location')
-	@:sub('/')
-	public function hello(location = 'The World') {
+	public function helloWithLocation(location:String) {
 		return new SmallUniverseRoute<HelloPage>(new HelloPage(location));
 	}
+
+	@:sub('/')
+	public var hello = new SmallUniverseRoute<HelloPage>(new HelloPage('the world'));
 }

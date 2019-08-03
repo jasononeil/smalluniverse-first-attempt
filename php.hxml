@@ -5,6 +5,7 @@
 -lib tink_macro
 -lib tink_json
 -cp src
+-cp example
 -main Server
 -php www/
 -debug

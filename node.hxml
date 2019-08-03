@@ -6,6 +6,7 @@
 -lib tink_json
 -lib hxnodejs
 -cp src
+-cp example
 -main Server
 -js www/server.js
 -D prevent-webpack-js-output
