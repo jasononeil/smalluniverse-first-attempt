@@ -9,7 +9,8 @@ import smalluniverse.UniversalComponent;
 using tink.CoreApi;
 
 @:autoBuild(smalluniverse.SUBuildMacro.buildUniversalPage())
-class UniversalPage<TAction, TProps, TState> extends UniversalComponent<TProps, TState> {
+@:ignoreEmptyRender
+class UniversalPage<TAction, TProps:{}, TState:{}> extends UniversalComponent<TProps, TState> {
 	#if client
 	public static function hydrate(pageCls:Class<UniversalPage<Dynamic, Dynamic, Dynamic>>):Promise<Noise> {
 		return SUUniversalPageClientUtils.hydrate(pageCls);

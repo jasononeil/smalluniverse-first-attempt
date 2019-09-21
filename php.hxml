@@ -1,5 +1,5 @@
 -D server
--lib react
+-lib react-next
 -lib tink_web
 -lib tink_core
 -lib tink_macro

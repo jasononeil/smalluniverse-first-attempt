@@ -1,5 +1,5 @@
+import react.ReactComponent.ReactFragment;
 import smalluniverse.UniversalPage;
-import smalluniverse.UniversalComponent;
 import smalluniverse.UniversalNode;
 import smalluniverse.SUMacro.jsx;
 #if server

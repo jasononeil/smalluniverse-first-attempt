@@ -12,7 +12,7 @@ typedef UniversalFunctionalComponent<TProps> = TProps->UniversalNode;
 	Components in Small Universe should extend this class.
 **/
 @:autoBuild(smalluniverse.SUBuildMacro.buildUniversalComponent())
-class UniversalComponent<TProps, TState> extends UniversalComponentBaseType<TProps, TState> {
+class UniversalComponent<TProps:{}, TState:{}> extends UniversalComponentBaseType<TProps, TState> {
 	#if client
 	override public function render():UniversalNode {
 		return null;
@@ -26,5 +26,5 @@ class UniversalComponent<TProps, TState> extends UniversalComponentBaseType<TPro
 	On client-side JS, this points to `ReactComponent`.
 	On server-side platforms, this points to `SUServerSideComponent`.
 **/
-typedef UniversalComponentBaseType<TProps, TState> = #if (client) react.ReactComponent
-	.ReactComponentOf<TProps, TState, Dynamic> #else SUServerSideComponent<TProps, TState> #end;
+typedef UniversalComponentBaseType<TProps:{}, TState:{}> = #if (client) react.ReactComponent.ReactComponentOf<TProps,
+	TState> #else SUServerSideComponent<TProps, TState> #end;

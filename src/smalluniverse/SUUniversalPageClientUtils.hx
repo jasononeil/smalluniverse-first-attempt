@@ -17,15 +17,16 @@ class SUUniversalPageClientUtils {
 		var propsElem = document.getElementById('small-universe-props');
 		var propsJson = propsElem.innerText;
 		var page = Type.createInstance(pageCls, []);
+		var props = null;
 		try {
-			@:privateAccess page.props = page.deserializeProps(propsJson);
+			props = @:privateAccess page.deserializeProps(propsJson);
 		} catch (e:Dynamic) {
 			trace('Failed to deserialize props', e);
 			return new Error('Failed to deserialize props: $e');
 		}
 		return Future.async(function(done:Outcome<Noise, Error>->Void) {
 			try {
-				doClientRender(page, function() done(Success(Noise)));
+				doClientRender(page, props, function() done(Success(Noise)));
 			} catch (e:Dynamic) {
 				trace('Failed to render page', e);
 				done(Failure(new Error('Failed to render page: $e')));
@@ -39,11 +40,11 @@ class SUUniversalPageClientUtils {
 		return fetchRequest(request).next(getResponseText).next(handleResponseSpecialInstructions).next(rerenderUsingUpdatedJson.bind(page));
 	}
 
-	static function doClientRender(page:UniversalPage<Dynamic, Dynamic, Dynamic>, ?cb:Void->Void) {
+	static function doClientRender(page:UniversalPage<Dynamic, Dynamic, Dynamic>, props:Dynamic, ?cb:Void->Void) {
 		// Note: React is smart enough to maintain our instance and not recreate a new one,
 		// even though we are passing in the class and not the instance.
 		var pageCls:Class<react.ReactComponent.ReactComponent> = cast Type.getClass(page);
-		var pageElm = React.createElement(pageCls, page.props);
+		var pageElm = React.createElement(pageCls, props);
 		var container = document.getElementById('small-universe-app');
 		if (container == null) {
 			throw new Error('A container with ID small-universe-app was not found, aborting render');
@@ -134,9 +135,9 @@ class SUUniversalPageClientUtils {
 	static function rerenderUsingUpdatedJson(page:UniversalPage<Dynamic, Dynamic, Dynamic>, responseToRender:Option<String>):Promise<Noise> {
 		switch responseToRender {
 			case Some(serializedResponse):
-				@:privateAccess page.props = page.deserializeProps(serializedResponse);
+				var props = @:privateAccess page.deserializeProps(serializedResponse);
 				return Future.async(function(done) {
-					doClientRender(page, function() done(Noise));
+					doClientRender(page, props, function() done(Noise));
 				});
 			case None:
 				return Noise;

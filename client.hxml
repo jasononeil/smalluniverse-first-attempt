@@ -1,5 +1,6 @@
 -D client
--lib react
+-D react_auto_jsx
+-lib react-next
 -lib tink_core
 -lib tink_macro
 -lib tink_json
