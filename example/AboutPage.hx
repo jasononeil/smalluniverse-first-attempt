@@ -1,5 +1,5 @@
 import smalluniverse.UniversalPage;
-import smalluniverse.SUMacro.jsx;
+import smalluniverse.HtmlElements.*;
 
 using tink.CoreApi;
 
@@ -11,10 +11,7 @@ class AboutPage extends UniversalPage<{}, {}, {}> {
 	override function render() {
 		this.head.addScript('react-test.bundle.js');
 		this.head.setTitle('About!');
-		return jsx('<div>
-			<h1 onClick={handleClick}>About!</h1>
-			<a href="/">Link to home</a>
-		</div>');
+		return div([h1({onClick: handleClick}, "About!"), a({href: "/"}, "Link to home")]);
 	}
 
 	override function componentDidMount():Void {

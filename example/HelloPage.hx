@@ -1,7 +1,7 @@
 import react.ReactComponent.ReactFragment;
 import smalluniverse.UniversalPage;
 import smalluniverse.UniversalNode;
-import smalluniverse.SUMacro.jsx;
+import smalluniverse.HtmlElements.*;
 #if server
 import sys.io.File;
 import haxe.Json;
@@ -30,12 +30,17 @@ class HelloPage extends UniversalPage<HelloActions, HelloProps, {}> {
 	}
 
 	override function render():UniversalNode {
-		return jsx('<div>
-			<h1 onClick=${clickHeader}>Hello ${this.props.name}</h1>
-			<h2 onClick=${clickHeader2}><em>How does it feel being <strong>${"" + this.props.age}</strong> years old?</em></h2>
-			<p>Nice to meet you! <b>:)</b> - welcome to ${this.props.location}</p>
-			<input onKeyUp=${keyup} />
-		</div>');
+		// It's a trade-off in plain-text readability vs editor happyness
+		// JSX feels easier to read (maybe it's just familiarity?)
+		// But with this format I get auto-completion, go-to-definition, hover-documentation etc
+		return div([
+			h1({onClick: clickHeader}, 'Hello ${this.props.name}'),
+			h2({onClick: clickHeader2}, [
+				em((['How does it feel being ', strong('${this.props.age}'), ' years old?'] : Array<ReactFragment>))
+			]),
+			p((['Nice to meet you! ', b(':)'), ' - welcome to ${this.props.location}'] : Array<ReactFragment>)),
+			input({onKeyUp: keyup})
+		]);
 	}
 
 	@:client
